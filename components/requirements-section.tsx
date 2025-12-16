@@ -15,6 +15,9 @@ export function RequirementsSection() {
               <span className="block text-primary">Requisitos</span>
             </h2>
             <div className="w-24 h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed text-pretty max-w-3xl mx-auto pt-2">
+              Conoce los documentos y condiciones necesarias.
+            </p>
           </div>
 
           {/* Main Documentation Card */}
@@ -33,7 +36,7 @@ export function RequirementsSection() {
                   "Acta de Nacimiento (Actualizada)",
                   "Clave Única de Registro de Población (CURP - Certificada: Verificada con el Registro Civil)",
                   "Identificación Oficial Vigente (INE)",
-                  "Certificado de Nivel Medio Superior (Legalizado)",
+                  "Certificado de Nivel Medio Superior (Validado)",
                   "Currículum Vítae",
                   "Constancia de estudios con al menos 50% de créditos concluidos (Lic. en Derecho y Lic. en Contaduría)",
                 ].map((doc, idx) => (

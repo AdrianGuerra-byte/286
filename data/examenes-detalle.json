@@ -1,109 +1,8 @@
 [
     {
-        "id": "pedagogia",
-        "objetivo": "El objetivo principal del EXUNAL-CUH en Pedagogía es evaluar y certificar oficialmente que el sustentante posee los conocimientos, habilidades y competencias teórico-prácticas equivalentes a las de un egresado del nivel de licenciatura en Pedagogía.",
-        "dirigidoA": 
-        [
-            {
-                "titulo": "Este examen está dirigido a profesionales y personas con experiencia significativa en el campo de la educación que, a pesar de no contar con un título universitario formal, han desarrollado conocimientos sólidos a través de:"
-            },
-            {
-                "titulo": "Experiencia Laboral Docente o Directiva",
-                "descripcion": "Educadores, instructores, capacitadores, coordinadores académicos o directivos con años de servicio en instituciones educativas de cualquier nivel."
-            },
-            {
-                "titulo": "Formación Autodidacta",
-                "descripcion": "Personas que han realizado un estudio sistemático e independiente de teorías pedagógicas, metodologías didácticas, psicología educativa y gestión escolar."
-            },
-            {
-                "titulo": "Capacitación y Actualización Continua",
-                "descripcion": "Profesionales que han acumulado diplomados, cursos especializados, seminarios y otras formas de educación no formal en áreas pedagógicas."
-            }
-            ,
-            {
-                "titulo": "Otros Aprendizajes en Contextos Educativos",
-                "descripcion": "Personas que han participado en el diseño de programas educativos, materiales didácticos o proyectos de intervención comunitaria con fines pedagógicos, proyectos de investigación educativa."
-            }
-        ],
-        "estructura": [
-            "Examen Teórico (160 reactivos)",
-            "Examen Práctico"
-        ],
-        "guiaTeoricoUrl": "https://drive.google.com/contaduria-teorico",
-        "guiaEstudiosUrl": "https://drive.google.com/contaduria-estudios"
-    },
-    {
-        "id": "administracion",
-        "objetivo": "El objetivo del EXUNAL-CUH en Administración es evaluar y certificar de manera oficial que el sustentante posee los conocimientos, competencias y habilidades directivas equivalentes a las de un egresado de licenciatura en Administración o áreas afines.",
-        "dirigidoA": [
-            {
-                "titulo": "Este examen está diseñado para profesionales con amplia trayectoria en el mundo empresarial, institucional o de gestión, que han desarrollado una sólida expertise práctica sin contar con un título universitario formal. Es ideal para:"
-            },
-            {
-                "titulo": "Profesionales con Experiencia en Gestión y Dirección",
-                "descripcion": "Emprendedores, gerentes, supervisores, jefes de área, coordinadores operativos y directivos con responsabilidad en la planeación, organización, dirección o control de recursos humanos, financieros o materiales."
-            },
-            {
-                "titulo": "Especialistas en Procesos Empresariales",
-                "descripcion": "Personas con experiencia demostrable en áreas como finanzas, recursos humanos, operaciones, logística, mercadotecnia, ventas, compras o administración de proyectos."
-            },
-            {
-                "titulo": "Profesionales con Formación Autodidacta",
-                "descripcion": "Individuos que han adquirido conocimientos teóricos y técnicos en administración, negocios o economía a través del estudio sistemático e independiente."
-            }
-            ,
-            {
-                "titulo": "Capacitadores y Consultores",
-                "descripcion": "Instructores, asesores o consultores independientes con experiencia en la implementación de sistemas de gestión, mejora de procesos o capacitación empresarial."
-            }
-        ],
-        "estructura": [
-            "Examen Teórico (160 reactivos)",
-            "Examen Práctico"
-        ],
-        "guiaTeoricoUrl": "https://drive.google.com/administracion-teorico",
-        "guiaEstudiosUrl": "https://drive.google.com/administracion-estudios"
-    },
-    {
-        "id": "sistemas",
-        "objetivo": "El objetivo del EXUNAL-CUH en Ciencias Computacionales es evaluar y certificar oficialmente que el sustentante posee los conocimientos teóricos, las competencias técnicas y las habilidades de desarrollo y análisis equivalentes a los de un egresado de licenciatura en Ciencias Computacionales.",
-        "dirigidoA": [
-            {
-                "titulo": "Está diseñado para profesionales con experiencia práctica en tecnología que carecen de un título universitario formal, tales como:"
-            },
-            {
-                "titulo": "Programadores con experiencia en desarrollo de software."
-            },
-            {
-                "titulo": "Administradores de sistemas, redes o bases de datos."
-            },
-            {
-                "titulo": "Especialistas en ciberseguridad o computación en la nube."
-            },
-            {
-                "titulo": " Analistas de datos o científicos de datos autodidactas."
-            },
-            {
-                "titulo": "Profesionales con certificaciones técnicas relevantes."
-            },
-            {
-                "titulo": "Líderes técnicos o arquitectos de software sin título profesional."
-            }
-        ],
-        "estructura": [
-            "Examen Teórico (160 reactivos)",
-            "Examen Práctico"
-        ],
-        "guiaTeoricoUrl": "https://drive.google.com/derecho-teorico",
-        "guiaEstudiosUrl": "https://drive.google.com/derecho-estudios"
-    },
-    {
         "id": "contaduria",
         "objetivo": "El objetivo principal del EXUNAL-CUH en Contaduría es evaluar y certificar oficialmente que el sustentante posee los conocimientos, competencias técnicas y habilidades prácticas equivalentes a los de un egresado del nivel de licenciatura en Contaduría Pública.",
         "dirigidoA": [
-             {
-                "titulo": "Este examen está dirigido a profesionales con una trayectoria consolidada en el área contable y financiera que, sin poseer un título universitario formal, han adquirido conocimientos especializados a través de:"
-            },
             {
                 "titulo": "Experiencia Práctica en Contabilidad",
                 "descripcion": "Contadores prácticos, auxiliares contables senior, responsables de departamentos de contabilidad general o costos con años de experiencia en el registro, análisis e interpretación de información financiera."
@@ -125,40 +24,124 @@
             "Examen Teórico (160 reactivos)",
             "Examen Práctico"
         ],
+        "guiaTeoricoUrl": "https://drive.google.com/contaduria-teorico",
+        "guiaEstudiosUrl": "https://drive.google.com/contaduria-estudios"
+    },
+    {
+        "id": "administracion",
+        "objetivo": "Evaluar y certificar que el sustentante posee los conocimientos, competencias y habilidades equivalentes a un egresado en Administración, capaz de gestionar recursos, tomar decisiones estratégicas y liderar equipos de trabajo.",
+        "dirigidoA": [
+            {
+                "titulo": "Gerentes y Supervisores",
+                "descripcion": "Profesionales con experiencia en la dirección de equipos, toma de decisiones operativas y gestión de recursos en organizaciones públicas o privadas."
+            },
+            {
+                "titulo": "Emprendedores",
+                "descripcion": "Personas que han desarrollado y administrado sus propios negocios, adquiriendo conocimientos prácticos en planeación, organización y control empresarial."
+            },
+            {
+                "titulo": "Coordinadores de Proyectos",
+                "descripcion": "Profesionales con experiencia en la planificación, ejecución y evaluación de proyectos empresariales o sociales."
+            }
+        ],
+        "estructura": [
+            "Examen Teórico (150 reactivos)",
+            "Examen Práctico"
+        ],
+        "guiaTeoricoUrl": "https://drive.google.com/administracion-teorico",
+        "guiaEstudiosUrl": "https://drive.google.com/administracion-estudios"
+    },
+    {
+        "id": "sistemas",
+        "objetivo": "Certificar que el sustentante cuenta con los conocimientos y competencias equivalentes a un Ingeniero en Sistemas Computacionales, capaz de desarrollar, implementar y mantener soluciones tecnológicas.",
+        "dirigidoA": [
+            {
+                "titulo": "Desarrolladores de Software",
+                "descripcion": "Programadores con experiencia en lenguajes de programación, desarrollo de aplicaciones web, móviles o de escritorio."
+            },
+            {
+                "titulo": "Administradores de Sistemas",
+                "descripcion": "Profesionales con experiencia en configuración, mantenimiento y seguridad de servidores, redes y bases de datos."
+            },
+            {
+                "titulo": "Especialistas en TI",
+                "descripcion": "Profesionales autodidactas con conocimientos en análisis de sistemas, arquitectura de software y metodologías de desarrollo."
+            }
+        ],
+        "estructura": [
+            "Examen Teórico (170 reactivos)",
+            "Examen Práctico"
+        ],
+        "guiaTeoricoUrl": "https://drive.google.com/sistemas-teorico",
+        "guiaEstudiosUrl": "https://drive.google.com/sistemas-estudios"
+    },
+    {
+        "id": "derecho",
+        "objetivo": "Evaluar y certificar los conocimientos jurídicos y competencias equivalentes a un Licenciado en Derecho, capaz de interpretar y aplicar el marco legal en diversas áreas del derecho.",
+        "dirigidoA": [
+            {
+                "titulo": "Asesores Jurídicos",
+                "descripcion": "Profesionales con experiencia en consultoría legal, elaboración de contratos y asesoría en cumplimiento normativo."
+            },
+            {
+                "titulo": "Gestores Legales",
+                "descripcion": "Personas con experiencia en trámites administrativos, judiciales y representación ante autoridades."
+            },
+            {
+                "titulo": "Especialistas en Áreas Específicas",
+                "descripcion": "Profesionales con conocimientos en derecho laboral, mercantil, fiscal o penal adquiridos por experiencia práctica."
+            }
+        ],
+        "estructura": [
+            "Examen Teórico (180 reactivos)",
+            "Examen Práctico"
+        ],
+        "guiaTeoricoUrl": "https://drive.google.com/derecho-teorico",
+        "guiaEstudiosUrl": "https://drive.google.com/derecho-estudios"
+    },
+    {
+        "id": "pedagogia",
+        "objetivo": "Certificar que el sustentante posee los conocimientos y competencias pedagógicas equivalentes a un Licenciado en Pedagogía, capaz de diseñar, implementar y evaluar procesos educativos.",
+        "dirigidoA": [
+            {
+                "titulo": "Docentes en Activo",
+                "descripcion": "Profesores con experiencia en la enseñanza en diferentes niveles educativos sin contar con título en pedagogía."
+            },
+            {
+                "titulo": "Capacitadores Corporativos",
+                "descripcion": "Profesionales dedicados a la formación y desarrollo de personal en empresas u organizaciones."
+            },
+            {
+                "titulo": "Diseñadores Instruccionales",
+                "descripcion": "Personas con experiencia en el diseño de contenidos educativos, cursos y materiales didácticos."
+            }
+        ],
+        "estructura": [
+            "Examen Teórico (150 reactivos)",
+            "Examen Práctico"
+        ],
         "guiaTeoricoUrl": "https://drive.google.com/pedagogia-teorico",
         "guiaEstudiosUrl": "https://drive.google.com/pedagogia-estudios"
     },
     {
-        "id": "derecho",
-        "objetivo": "El objetivo principal del EXUNAL-CUH en Derecho es evaluar y certificar oficialmente que el sustentante posee los conocimientos teóricos, las competencias prácticas y las habilidades de análisis jurídico equivalentes a los de un egresado del nivel de licenciatura en Derecho.",
+        "id": "mercadotecnia",
+        "objetivo": "Evaluar y certificar los conocimientos y competencias equivalentes a un Licenciado en Mercadotecnia, capaz de desarrollar estrategias comerciales, analizar mercados y gestionar marcas.",
         "dirigidoA": [
-             {
-                "titulo": "Este examen está dirigido a profesionales y servidores públicos con una trayectoria destacada en el ámbito jurídico-institucional que, sin contar con un título universitario formal, han adquirido conocimientos y experiencia significativa. Es idóneo para:"
+            {
+                "titulo": "Especialistas en Marketing Digital",
+                "descripcion": "Profesionales con experiencia en gestión de redes sociales, publicidad digital, SEO y análisis de métricas."
             },
             {
-                "titulo": "Funcionarios y Servidores Públicos con Experiencia Jurídica",
-                "descripcion": "Personal de áreas jurídicas gubernamentales, actuarios, secretarios de acuerdos, oficiales judiciales o asistentes de magistrados con amplia experiencia en procedimientos legales."
+                "titulo": "Gerentes Comerciales",
+                "descripcion": "Personas con trayectoria en ventas, desarrollo de mercados y estrategias de posicionamiento de productos o servicios."
             },
             {
-                "titulo": "Profesionales en Despachos y Notarías",
-                "descripcion": "Asistentes jurídicos senior, paralegales, gestores y administradores de bufetes o notarías con responsabilidades sustantivas en la elaboración de documentos, seguimiento de litigios y aplicación de normativas."
-            },
-            {
-                "titulo": "Consultores y Asesores en Materia Legal",
-                "descripcion": "Personas que brindan asesoría en áreas como derecho laboral, mercantil, administrativo o civil, derivada de una prolongada experiencia práctica."
-            },
-            {
-                "titulo": "Profesionales con Formación Autodidacta",
-                "descripcion": "Individuos que han adquirido un conocimiento profundo y sistemático de la doctrina, legislación y jurisprudencia nacional a través del estudio independiente y la actualización continua."
-            }
-            ,
-            {
-                "titulo": "Mediadores y Conciliadores Certificados",
-                "descripcion": "Profesionales con experiencia formal en mecanismos alternativos de solución de controversias."
+                "titulo": "Emprendedores y Consultores",
+                "descripcion": "Profesionales que han desarrollado estrategias de branding, investigación de mercados y campañas publicitarias de manera independiente."
             }
         ],
         "estructura": [
-            "Examen Teórico (160 reactivos)",
+            "Examen Teórico (155 reactivos)",
             "Examen Práctico"
         ],
         "guiaTeoricoUrl": "https://drive.google.com/mercadotecnia-teorico",
