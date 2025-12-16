@@ -27,48 +27,48 @@ export function Navigation() {
 
           {/* Desktop Navigation - Centered */}
           <div className="hidden lg:flex items-center justify-center flex-1 gap-6 xl:gap-7">
-            <a
-              href="#quienes-somos"
+            <Link
+              href="/#quienes-somos"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
               Quiénes Somos
-            </a>
-            <a
-              href="#acuerdo-286"
+            </Link>
+            <Link
+              href="/#acuerdo-286"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
               Acuerdo 286
-            </a>
-            <a
-              href="#oferta"
+            </Link>
+            <Link
+              href="/#oferta"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
               Exámenes
-            </a>
-            <a
-              href="#calendario"
+            </Link>
+            <Link
+              href="/#calendario"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
               Calendario
-            </a>
-            <a
-              href="#proceso"
+            </Link>
+            <Link
+              href="/#proceso"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
               Inscripción
-            </a>
-            <a
-              href="#faq"
+            </Link>
+            <Link
+              href="/#faq"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
               FAQ
-            </a>
-            <a
-              href="#contacto"
+            </Link>
+            <Link
+              href="/#contacto"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
               Contacto
-            </a>
+            </Link>
           </div>
 
           {/* CTA Button Desktop */}
@@ -92,55 +92,55 @@ export function Navigation() {
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
-              <a
-                href="#quienes-somos"
+              <Link
+                href="/#quienes-somos"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Quiénes Somos
-              </a>
-              <a
-                href="#acuerdo-286"
+              </Link>
+              <Link
+                href="/#acuerdo-286"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Acuerdo 286
-              </a>
-              <a
-                href="#oferta"
+              </Link>
+              <Link
+                href="/#oferta"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Oferta de Exámenes
-              </a>
-              <a
-                href="#calendario"
+              </Link>
+              <Link
+                href="/#calendario"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Calendario
-              </a>
-              <a
-                href="#proceso"
+              </Link>
+              <Link
+                href="/#proceso"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Proceso de Inscripción
-              </a>
-              <a
-                href="#faq"
+              </Link>
+              <Link
+                href="/#faq"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Preguntas Frecuentes
-              </a>
-              <a
-                href="#contacto"
+              </Link>
+              <Link
+                href="/#contacto"
                 className="text-sm font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contacto
-              </a>
+              </Link>
               <Button asChild size="lg" className="font-medium w-full mt-2">
                 <Link href="/inscripcion" onClick={() => setIsMenuOpen(false)}>
                   Inscríbete Ahora
