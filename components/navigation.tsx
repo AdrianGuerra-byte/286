@@ -61,7 +61,7 @@ export function Navigation() {
               href="#faq"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
             >
-              FAQ
+              FAQs
             </a>
             <a
               href="#contacto"
