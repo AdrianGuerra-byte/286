@@ -39,9 +39,7 @@ export function AboutSection() {
                   </p>
                   <p className="text-base lg:text-lg text-muted-foreground leading-relaxed text-pretty">
                     Proporcionamos un entorno de alto nivel académico y
-                    excelencia que les permita alcanzar su máximo potencial,
-                    formando profesionistas preparados para los desafíos del
-                    mundo actual.
+                    excelencia que les permita alcanzar su máximo potencial.
                   </p>
                 </div>
               </CardContent>
