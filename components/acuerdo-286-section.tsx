@@ -64,6 +64,60 @@ export function Acuerdo286Section() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Additional Info Cards */}
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+            {/* Titulación por Experiencia Laboral */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 lg:p-8 space-y-4">
+                <div className="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center">
+                  <Award className="w-7 h-7 text-secondary" />
+                </div>
+                <h3 className="font-serif font-bold text-xl text-foreground">
+                  Titulación por Experiencia Laboral
+                </h3>
+                <p className="text-muted-foreground leading-relaxed text-pretty">
+                  Valida tu experiencia profesional y conocimientos para obtener tu título de licenciatura. Reconoce el
+                  aprendizaje autodidacta y la práctica laboral.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="text-secondary mt-1">•</span>
+                    <span>Validación de experiencia laboral</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-secondary mt-1">•</span>
+                    <span>Título profesional con validez oficial</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-secondary mt-1">•</span>
+                    <span>Múltiples áreas de conocimiento disponibles</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Who Can Apply */}
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-6 lg:p-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                    <FileCheck className="w-6 h-6 text-primary-foreground" />
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="font-serif font-bold text-xl text-foreground">
+                      ¿Quiénes pueden presentarlo?
+                    </h3>
+                    <div className="space-y-2 text-muted-foreground leading-relaxed">
+                      <p className="text-pretty">
+                        Personas que adquirieron conocimientos de forma autodidacta o por experiencia laboral en el área y buscan acreditar algún perfil autorizado de educación superior.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </section>
