@@ -1,7 +1,7 @@
 [
    {
     "id": "pedagogia",
-    "nombre": "EXUNAL - Licenciatura en Pedagogía",
+    "nombre": "Licenciatura en Pedagogía",
     "categoria": "Nivel Superior",
     "descripcion": "Evaluación de conocimientos fundamentales y específicos del campo de la Pedagogía.",
     "modalidad": "Evaluación Global",
@@ -21,7 +21,7 @@
   },
   {
     "id": "administracion",
-    "nombre": "EXUNAL - Licenciatura en Administración",
+    "nombre": "Licenciatura en Administración",
     "categoria": "Nivel Superior",
     "descripcion": "Evaluación de conocimientos específicos en el área de administración.",
     "modalidad": "Evaluación Global",
@@ -41,7 +41,7 @@
   },
  {
     "id": "sistemas",
-    "nombre": "EXUNAL - Licenciatura en Ciencias Computacionales",
+    "nombre": "Licenciatura en Ciencias Computacionales",
     "categoria": "Nivel Superior",
     "descripcion": "Evaluación de conocimientos específicos en el área de Ciencias Computacionales.",
     "modalidad": "Evaluación Global",
@@ -61,7 +61,7 @@
   },
   {
     "id": "contaduria",
-    "nombre": "EXUNAL - Licenciatura en Contaduría",
+    "nombre": "Licenciatura en Contaduría",
     "categoria": "Nivel Superior",
     "descripcion": "Evaluación de conocimientos específicos en el área de Contaduría. Este programa requiere al menos 50% de créditos cursados.",
     "modalidad": "Evaluación Global",
@@ -81,7 +81,7 @@
   },
   {
     "id": "derecho",
-    "nombre": "EXUNAL - Licenciatura en Derecho",
+    "nombre": "Licenciatura en Derecho",
     "categoria": "Nivel Superior",
     "descripcion": "Evaluación de conocimientos específicos en el área de Derecho. Este programa requiere al menos 50% de créditos cursados.",
     "modalidad": "Evaluación Global",
