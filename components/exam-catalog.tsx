@@ -32,12 +32,10 @@ export function ExamCatalog() {
             {/* Header */}
             <div className="text-center space-y-4">
               <h2 className="font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-foreground text-balance">
-                EXAMEN ÚNICO DE ACREDITACIÓN DE LICENCIATURA CUH (EXUNAL -CUH)
+                Licenciaturas.
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed text-pretty">
-                EXUNAL-CUH es el Examen Único de Acreditación de Licenciatura, establecido conforme al Acuerdo 286. Es el mecanismo 
-                de evaluación mediante el cual la institución certifica los conocimientos correspondientes al nivel licenciatura, 
-                adquiridos a través de la experiencia profesional, el estudio autodidacta o la formación no formal.
+                Elige la licenciatura que deseas acreditar.
               </p>
             </div>
 
