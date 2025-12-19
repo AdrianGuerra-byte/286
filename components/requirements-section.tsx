@@ -33,7 +33,7 @@ export function RequirementsSection() {
                   "Acta de Nacimiento (Actualizada)",
                   "Clave Única de Registro de Población (CURP - Certificada: Verificada con el Registro Civil)",
                   "Identificación Oficial Vigente (INE)",
-                  "Certificado de Nivel Medio Superior (Validado)",
+                  "Certificado de Nivel Medio Superior (Legalizado)",
                   "Currículum Vítae",
                   "Constancia de estudios con al menos 50% de créditos concluidos (Lic. en Derecho y Lic. en Contaduría)",
                 ].map((doc, idx) => (

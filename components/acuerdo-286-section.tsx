@@ -40,7 +40,7 @@ export function Acuerdo286Section() {
                       <li className="flex items-start gap-3">
                         <span className="text-secondary text-xl mt-0.5">•</span>
                         <span className="text-base lg:text-lg text-muted-foreground leading-relaxed">
-                          Revalidar o homologar estudios.
+                          Revalidar u homologar estudios.
                         </span>
                       </li>
                       <li className="flex items-start gap-3">
