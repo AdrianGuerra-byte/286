@@ -23,7 +23,7 @@ export default function HomePage() {
         <ExamCatalog />
         <CalendarSection />
         <RegistrationProcessSection />
-        <TestimonialsSection />
+        {/* <TestimonialsSection /> */}
         <FAQSection />
         <ContactSection />
       </main>
