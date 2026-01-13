@@ -78,7 +78,7 @@ export function ExamCard({ exam, onViewDetails }: ExamCardProps) {
       </div>
 
       <CardContent className="flex-1 p-6 space-y-5">
-        <p className="text-sm lg:text-base text-muted-foreground leading-relaxed text-pretty line-clamp-3">
+        <p className="text-sm lg:text-base text-muted-foreground leading-relaxed text-pretty line-clamp-5">
           {exam.descripcion}
         </p>
 
