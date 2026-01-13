@@ -1,5 +1,8 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 
+// Interfaz para los exámenes
+// regulado: true = Licenciaturas con reconocimiento oficial completo
+// regulado: false = Licenciaturas no reguladas (requieren al menos 50% de créditos cursados)
 export interface Examen {
   id: number
   nombre: string
@@ -7,6 +10,7 @@ export interface Examen {
   codigo_interno: string
   costo?: string
   activo: boolean
+  regulado?: boolean
 }
 
 export interface AspiranteData {
@@ -17,6 +21,15 @@ export interface AspiranteData {
   numero_telefonico: string
   examen_id: number
   curp?: string
+  metadata?: {
+    documentos?: {
+      ActaNacimiento?: 'Pendiente' | 'Validado' | 'Rechazado'
+      INE?: 'Pendiente' | 'Validado' | 'Rechazado'
+      CertificadoEstudios?: 'Pendiente' | 'Validado' | 'Rechazado'
+      ComprobanteDomicilio?: 'Pendiente' | 'Validado' | 'Rechazado'
+    }
+    [key: string]: any
+  }
 }
 
 export interface AspiranteResponse {
@@ -27,9 +40,43 @@ export interface AspiranteResponse {
   correo_electronico: string
   numero_telefonico: string
   pseudo_matricula: string
+  numero_referencia?: string
   fecha_aplicacion_examen: string
   estatus_pago: boolean
   examen: Examen
+}
+
+export interface EstatusDocumento {
+  acta_nacimiento: string
+  ine: string
+  certificado_estudios: string
+  comprobante_domicilio: string
+}
+
+export interface AspiranteEstatusCompleto {
+  nombre_completo: string
+  correo_electronico: string
+  numero_telefonico: string
+  examen: {
+    id: number
+    nombre: string
+  }
+  matricula: string
+  numero_referencia: string
+  estatus_pago: boolean
+  fecha_pago: string | null
+  fecha_solicitud: string
+  fecha_aplicacion_examen: string
+  estatus_documentos: EstatusDocumento
+  estatus_general: string
+  metadata?: {
+    documentos?: {
+      ActaNacimiento?: string
+      INE?: string
+      CertificadoEstudios?: string
+      ComprobanteDomicilio?: string
+    }
+  }
 }
 
 export interface ApiResponse<T> {
@@ -127,7 +174,7 @@ export const api = {
   },
 
   /**
-   * Obtener aspirante por matrícula
+   * Obtener aspirante por matrícula (versión simple)
    */
   async getAspirantePorMatricula(matricula: string): Promise<ApiResponse<AspiranteResponse>> {
     try {
@@ -147,6 +194,34 @@ export const api = {
       return data
     } catch (error) {
       console.error('Error al obtener aspirante:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Validar estatus completo de un aspirante por matrícula
+   */
+  async validarEstatus(matricula: string): Promise<ApiResponse<AspiranteEstatusCompleto>> {
+    try {
+      const response = await fetch(`${API_URL}/aspirantes/matricula/${matricula}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('No se encontró ningún registro con esa matrícula')
+        }
+        throw new Error(data.message || 'Error al validar estatus')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error al validar estatus:', error)
       throw error
     }
   },
