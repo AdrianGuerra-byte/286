@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Navigation } from "@/components/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,48 +9,105 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, ArrowRight, Check, Upload, CreditCard, CheckCircle2 } from "lucide-react"
-import examenesData from "@/data/examenes.json"
+import { ArrowLeft, ArrowRight, Check, Upload, CreditCard, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react"
+import { api, generarUrlGoogleForms, type Examen } from "@/lib/api"
 
 export default function InscripcionPage() {
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     nombre: "",
-    apellidos: "",
+    apellido_paterno: "",
+    apellido_materno: "",
     email: "",
     telefono: "",
     curp: "",
     examen: "",
-    documentos: [] as string[],
     aceptaTerminos: false,
   })
   const [folio, setFolio] = useState("")
+  const [examenes, setExamenes] = useState<Examen[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [googleFormsUrl, setGoogleFormsUrl] = useState("")
 
-  const generateFolio = () => {
-    const random = Math.floor(Math.random() * 900000) + 100000
-    return `CUH-${new Date().getFullYear()}-${random}`
-  }
+  // Cargar exámenes al montar el componente
+  useEffect(() => {
+    const cargarExamenes = async () => {
+      try {
+        const response = await api.getExamenes()
+        if (response.success && response.data) {
+          setExamenes(response.data)
+        }
+      } catch (err) {
+        console.error('Error al cargar exámenes:', err)
+        setError('Error al cargar los exámenes disponibles')
+      }
+    }
+    cargarExamenes()
+  }, [])
 
-  const handleFileUpload = (fileName: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      documentos: [...prev.documentos, fileName],
-    }))
-  }
-
-  const handleNext = () => {
-    if (step === 1 && formData.nombre && formData.email && formData.examen) {
+  const handleNext = async () => {
+    if (step === 1 && formData.nombre && formData.apellido_paterno && formData.email && formData.examen) {
       setStep(2)
-    } else if (step === 2 && formData.documentos.length > 0) {
-      setStep(3)
-    } else if (step === 3) {
-      const generatedFolio = generateFolio()
-      setFolio(generatedFolio)
-      setStep(4)
+    } else if (step === 2 && formData.aceptaTerminos) {
+      // Registrar aspirante en la base de datos
+      setLoading(true)
+      setError(null)
+
+      try {
+        // Preparar datos para enviar a la API
+        const datosAspirante = {
+          nombre: formData.nombre,
+          apellido_paterno: formData.apellido_paterno,
+          apellido_materno: formData.apellido_materno || undefined,
+          correo_electronico: formData.email,
+          numero_telefonico: formData.telefono,
+          examen_id: parseInt(formData.examen),
+          curp: formData.curp || undefined,
+        }
+
+        // Llamar a la API
+        const response = await api.registrarAspirante(datosAspirante)
+
+        if (response.success && response.data) {
+          // Guardar el folio generado por la API
+          const matricula = response.data.aspirante.pseudo_matricula
+          setFolio(matricula)
+
+          // Generar URL de Google Forms con datos pre-llenados
+          const urlForms = generarUrlGoogleForms({
+            nombre: formData.nombre,
+            apellido_paterno: formData.apellido_paterno,
+            apellido_materno: formData.apellido_materno,
+            correo_electronico: formData.email,
+            numero_telefonico: formData.telefono,
+            matricula: matricula,
+            curp: formData.curp,
+          })
+          setGoogleFormsUrl(urlForms)
+
+          // Avanzar al paso de confirmación
+          setStep(3)
+        }
+      } catch (err: any) {
+        console.error('Error al registrar:', err)
+        setError(err.message || 'Error al procesar el registro')
+
+        // Mostrar error específico al usuario
+        if (err.message.includes('correo')) {
+          alert('El correo electrónico ya está registrado. Por favor, usa otro correo.')
+        } else if (err.message.includes('examen')) {
+          alert('El examen seleccionado no está disponible. Por favor, selecciona otro.')
+        } else {
+          alert('Error al procesar el registro: ' + err.message)
+        }
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
-  const progress = (step / 4) * 100
+  const progress = (step / 3) * 100
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,7 +127,7 @@ export default function InscripcionPage() {
 
               <div className="space-y-2">
                 <h1 className="font-serif font-bold text-3xl sm:text-4xl text-foreground">Proceso de Inscripción</h1>
-                <p className="text-lg text-muted-foreground">Paso {step} de 4</p>
+                <p className="text-lg text-muted-foreground">Paso {step} de 3</p>
               </div>
 
               {/* Progress Bar */}
@@ -91,23 +148,33 @@ export default function InscripcionPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="nombre">Nombre(s) *</Label>
+                    <Input
+                      id="nombre"
+                      placeholder="Juan"
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                    />
+                  </div>
+
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="nombre">Nombre(s) *</Label>
+                      <Label htmlFor="apellido_paterno">Apellido Paterno *</Label>
                       <Input
-                        id="nombre"
-                        placeholder="Juan"
-                        value={formData.nombre}
-                        onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                        id="apellido_paterno"
+                        placeholder="García"
+                        value={formData.apellido_paterno}
+                        onChange={(e) => setFormData({ ...formData, apellido_paterno: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="apellidos">Apellidos *</Label>
+                      <Label htmlFor="apellido_materno">Apellido Materno</Label>
                       <Input
-                        id="apellidos"
-                        placeholder="García López"
-                        value={formData.apellidos}
-                        onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+                        id="apellido_materno"
+                        placeholder="López"
+                        value={formData.apellido_materno}
+                        onChange={(e) => setFormData({ ...formData, apellido_materno: e.target.value })}
                       />
                     </div>
                   </div>
@@ -154,8 +221,8 @@ export default function InscripcionPage() {
                         <SelectValue placeholder="Selecciona un examen" />
                       </SelectTrigger>
                       <SelectContent>
-                        {examenesData.map((exam) => (
-                          <SelectItem key={exam.id} value={exam.id}>
+                        {examenes.map((exam) => (
+                          <SelectItem key={exam.id} value={exam.id.toString()}>
                             {exam.nombre}
                           </SelectItem>
                         ))}
@@ -163,13 +230,20 @@ export default function InscripcionPage() {
                     </Select>
                   </div>
 
+                  {error && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+
                   <Button
                     onClick={handleNext}
-                    disabled={!formData.nombre || !formData.email || !formData.examen}
+                    disabled={!formData.nombre || !formData.apellido_paterno || !formData.email || !formData.examen || loading}
                     className="w-full gap-2"
                     size="lg"
                   >
-                    Continuar
+                    {loading ? 'Procesando...' : 'Continuar'}
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </CardContent>
@@ -238,13 +312,13 @@ export default function InscripcionPage() {
               </Card>
             )}
 
-            {/* Step 3: Pago */}
-            {step === 3 && (
+            {/* Step 2: Pago */}
+            {step === 2 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="font-serif text-2xl flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="text-primary font-bold">3</span>
+                      <span className="text-primary font-bold">2</span>
                     </div>
                     Información de Pago
                   </CardTitle>
@@ -276,7 +350,7 @@ export default function InscripcionPage() {
                       <div className="flex justify-between pt-3 border-t border-border">
                         <span className="text-muted-foreground">Monto a pagar:</span>
                         <span className="font-bold text-lg text-primary">
-                          {examenesData.find((e) => e.id === formData.examen)?.costo || "N/A"}
+                          {examenes.find((e) => e.id.toString() === formData.examen)?.costo || "Por definir"}
                         </span>
                       </div>
                     </div>
@@ -300,11 +374,11 @@ export default function InscripcionPage() {
                   </div>
 
                   <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                    <Button variant="outline" onClick={() => setStep(1)} disabled={loading} className="flex-1">
                       Atrás
                     </Button>
-                    <Button onClick={handleNext} disabled={!formData.aceptaTerminos} className="flex-1 gap-2">
-                      Confirmar Registro
+                    <Button onClick={handleNext} disabled={!formData.aceptaTerminos || loading} className="flex-1 gap-2">
+                      {loading ? 'Procesando...' : 'Confirmar Registro'}
                       <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
@@ -312,8 +386,8 @@ export default function InscripcionPage() {
               </Card>
             )}
 
-            {/* Step 4: Confirmación */}
-            {step === 4 && (
+            {/* Step 3: Confirmación */}
+            {step === 3 && (
               <Card className="border-2 border-primary/20">
                 <CardContent className="p-12 space-y-6 text-center">
                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
@@ -358,6 +432,31 @@ export default function InscripcionPage() {
                       </li>
                     </ul>
                   </div>
+
+                  {googleFormsUrl && (
+                    <div className="bg-primary/5 border-2 border-primary/20 rounded-xl p-6">
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
+                          <Upload className="w-5 h-5 text-primary" />
+                          Siguiente Paso: Subir Documentos
+                        </h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Ahora debes subir tus documentos requeridos a través de nuestro formulario de Google.
+                          Hemos pre-llenado tus datos para facilitar el proceso.
+                        </p>
+                        <Button
+                          asChild
+                          className="w-full gap-2"
+                          size="lg"
+                        >
+                          <a href={googleFormsUrl} target="_blank" rel="noopener noreferrer">
+                            Ir a Subir Documentos
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row gap-3 pt-6">
                     <Button asChild variant="outline" className="flex-1 bg-transparent">
