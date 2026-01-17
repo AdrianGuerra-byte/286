@@ -42,11 +42,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' http://localhost:4000 http://localhost:3000",
+              "connect-src 'self' http://localhost:4000 http://localhost:3000 https://hoyt-uncautious-jonnie.ngrok-free.dev https://*.vercel-insights.com https://*.vercel-analytics.com",
               "frame-ancestors 'none'",
             ].join('; '),
           },
