@@ -29,10 +29,37 @@ export default function EstatusPage() {
   const [aspirante, setAspirante] = useState<AspiranteEstatusCompleto | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // SEGURIDAD: Rate limiting para prevenir abuso de consultas
+  const [lastQueryTime, setLastQueryTime] = useState<number>(0)
+  const [queryCount, setQueryCount] = useState<number>(0)
 
   const validarEstatus = async () => {
+    // SEGURIDAD: Validación básica de entrada
     if (!matricula.trim()) {
       setError("Por favor, ingresa tu matrícula")
+      return
+    }
+
+    // SEGURIDAD: Rate limiting - máximo 5 consultas por minuto
+    const now = Date.now()
+    const oneMinute = 60000
+
+    if (now - lastQueryTime < 2000) {
+      setError("Por favor espera unos segundos antes de consultar nuevamente")
+      return
+    }
+
+    if (queryCount >= 5 && now - lastQueryTime < oneMinute) {
+      setError("Has excedido el límite de consultas. Por favor espera un minuto.")
+      return
+    }
+
+    // SEGURIDAD: Validar formato de matrícula (debe empezar con A y tener números)
+    const matriculaPattern = /^A\d{11}$/
+    const matriculaLimpia = matricula.trim().toUpperCase()
+
+    if (!matriculaPattern.test(matriculaLimpia)) {
+      setError("Formato de matrícula inválido. Debe ser: A + 11 dígitos (ej: A28691261000)")
       return
     }
 
@@ -40,8 +67,16 @@ export default function EstatusPage() {
     setError(null)
     setAspirante(null)
 
+    // Actualizar contadores de rate limiting
+    if (now - lastQueryTime < oneMinute) {
+      setQueryCount(prev => prev + 1)
+    } else {
+      setQueryCount(1)
+    }
+    setLastQueryTime(now)
+
     try {
-      const response = await api.validarEstatus(matricula.trim().toUpperCase())
+      const response = await api.validarEstatus(matriculaLimpia)
 
       if (response.success && response.data) {
         setAspirante(response.data)
@@ -49,7 +84,17 @@ export default function EstatusPage() {
         setError(response.message || "No se pudo obtener la información")
       }
     } catch (err: any) {
-      setError(err.message || "Error al consultar la matrícula")
+      // SEGURIDAD: No exponer detalles del error en producción
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error al validar estatus:', err)
+      }
+
+      // Mensaje genérico para proteger información del sistema
+      if (err.message.includes('encontró')) {
+        setError("No se encontró ningún registro con esa matrícula")
+      } else {
+        setError("No pudimos consultar tu información. Por favor, intenta nuevamente.")
+      }
     } finally {
       setLoading(false)
     }

@@ -29,6 +29,8 @@ export default function InscripcionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [googleFormsUrl, setGoogleFormsUrl] = useState("")
+  // Prevenir múltiples envíos: almacena timestamp del último envío
+  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0)
 
   // Cargar exámenes al montar el componente
   useEffect(() => {
@@ -48,18 +50,85 @@ export default function InscripcionPage() {
 
   const handleNext = async () => {
     if (step === 1 && formData.nombre && formData.apellido_paterno && formData.email && formData.examen) {
-      // Registrar aspirante en la base de datos
+      // SEGURIDAD: Prevenir múltiples envíos en menos de 3 segundos (debounce)
+      const now = Date.now()
+      if (now - lastSubmitTime < 3000) {
+        setError('Por favor espera unos segundos antes de enviar nuevamente')
+        return
+      }
+
+      // SEGURIDAD: Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.email)) {
+        setError('Por favor ingresa un correo electrónico válido')
+        return
+      }
+
+      // SEGURIDAD: Validar que nombres solo contengan letras, espacios, acentos y guiones
+      const nombreRegex = /^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s-]+$/
+      if (!nombreRegex.test(formData.nombre)) {
+        setError('El nombre solo puede contener letras, espacios y guiones')
+        return
+      }
+      if (!nombreRegex.test(formData.apellido_paterno)) {
+        setError('El apellido paterno solo puede contener letras, espacios y guiones')
+        return
+      }
+      if (formData.apellido_materno && !nombreRegex.test(formData.apellido_materno)) {
+        setError('El apellido materno solo puede contener letras, espacios y guiones')
+        return
+      }
+
+      // SEGURIDAD: Validar longitud de campos para prevenir ataques
+      if (formData.nombre.length > 100 || formData.apellido_paterno.length > 100) {
+        setError('Los nombres no pueden exceder 100 caracteres')
+        return
+      }
+
+      // SEGURIDAD: Validar teléfono (requerido, exactamente 10 dígitos)
+      const telefonoLimpio = formData.telefono.replace(/[^0-9]/g, '') // Solo contar dígitos
+      if (!formData.telefono || telefonoLimpio.length !== 10) {
+        setError('El teléfono debe tener exactamente 10 dígitos')
+        return
+      }
+
+      // SEGURIDAD: Sanitizar inputs según tipo de dato
+      // Para nombres: remover caracteres peligrosos y números
+      const sanitizeName = (input: string) => {
+        return input
+          .trim()
+          .replace(/[<>"'`]/g, '') // Remover caracteres HTML/JS peligrosos
+          .replace(/[0-9]/g, '') // Remover números (no válidos en nombres)
+          .replace(/\s+/g, ' ') // Normalizar espacios múltiples
+      }
+
+      // Para teléfono: solo permitir números, +, -, espacios y paréntesis
+      const sanitizePhone = (input: string) => {
+        return input
+          .trim()
+          .replace(/[^0-9+\-\s()]/g, '') // Solo caracteres válidos para teléfono
+      }
+
+      // Para email: remover caracteres peligrosos pero mantener formato válido
+      const sanitizeEmail = (input: string) => {
+        return input
+          .trim()
+          .toLowerCase()
+          .replace(/[<>"'`\s]/g, '') // Remover caracteres peligrosos y espacios
+      }
+
       setLoading(true)
       setError(null)
+      setLastSubmitTime(now)
 
       try {
-        // Preparar datos para enviar a la API
+        // Preparar datos para enviar a la API (con sanitización específica por tipo)
         const datosAspirante = {
-          nombre: formData.nombre,
-          apellido_paterno: formData.apellido_paterno,
-          apellido_materno: formData.apellido_materno || undefined,
-          correo_electronico: formData.email,
-          numero_telefonico: formData.telefono,
+          nombre: sanitizeName(formData.nombre),
+          apellido_paterno: sanitizeName(formData.apellido_paterno),
+          apellido_materno: formData.apellido_materno ? sanitizeName(formData.apellido_materno) : undefined,
+          correo_electronico: sanitizeEmail(formData.email),
+          numero_telefonico: sanitizePhone(formData.telefono),
           examen_id: parseInt(formData.examen),
           metadata: {
             documentos: {
@@ -99,16 +168,20 @@ export default function InscripcionPage() {
           setStep(2)
         }
       } catch (err: any) {
-        console.error('Error al registrar:', err)
-        setError(err.message || 'Error al procesar el registro')
+        // SEGURIDAD: No exponer detalles del error en consola en producción
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error al registrar:', err)
+        }
 
-        // Mostrar error específico al usuario
+        // Mensajes genéricos para no exponer información del sistema
+        const mensajeGenerico = 'No pudimos procesar tu inscripción. Por favor, intenta nuevamente.'
+
         if (err.message.includes('correo')) {
-          alert('El correo electrónico ya está registrado. Por favor, usa otro correo.')
+          setError('El correo electrónico ya está registrado')
         } else if (err.message.includes('examen')) {
-          alert('El examen seleccionado no está disponible. Por favor, selecciona otro.')
+          setError('El examen seleccionado no está disponible')
         } else {
-          alert('Error al procesar el registro: ' + err.message)
+          setError(mensajeGenerico)
         }
       } finally {
         setLoading(false)
@@ -230,12 +303,18 @@ export default function InscripcionPage() {
 
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="telefono">Teléfono *</Label>
+                      <Label htmlFor="telefono">Teléfono * (10 dígitos)</Label>
                       <Input
                         id="telefono"
-                        placeholder="55 1234 5678"
+                        type="tel"
+                        placeholder="5512345678"
+                        maxLength={10}
                         value={formData.telefono}
-                        onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                        onChange={(e) => {
+                          // Solo permitir números
+                          const soloNumeros = e.target.value.replace(/[^0-9]/g, '')
+                          setFormData({ ...formData, telefono: soloNumeros })
+                        }}
                       />
                     </div>
                   </div>

@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+// URL base del backend NestJS
+// Puerto 4000, ruta base /registro286
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hoyt-uncautious-jonnie.ngrok-free.dev/registro286'
 
 // Interfaz para los exámenes
 // regulado: true = Licenciaturas con reconocimiento oficial completo
@@ -107,7 +109,10 @@ export const api = {
 
       return data
     } catch (error) {
-      console.error('Error al obtener exámenes:', error)
+      // SEGURIDAD: Solo logear en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error al obtener exámenes:', error)
+      }
       throw error
     }
   },
@@ -132,7 +137,10 @@ export const api = {
 
       return data
     } catch (error) {
-      console.error('Error al obtener examen:', error)
+      // SEGURIDAD: Solo logear en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error al obtener examen:', error)
+      }
       throw error
     }
   },
@@ -153,6 +161,12 @@ export const api = {
       const data = await response.json()
 
       if (!response.ok) {
+        // DESARROLLO: Mostrar respuesta completa del servidor para diagnóstico
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Respuesta del servidor:', JSON.stringify(data, null, 2))
+          console.log('Status code:', response.status)
+        }
+
         // Manejar errores específicos
         if (response.status === 409) {
           throw new Error('El correo electrónico ya está registrado')
@@ -168,7 +182,10 @@ export const api = {
 
       return data
     } catch (error) {
-      console.error('Error al registrar aspirante:', error)
+      // SEGURIDAD: Solo logear en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error al registrar aspirante:', error)
+      }
       throw error
     }
   },
@@ -193,14 +210,13 @@ export const api = {
 
       return data
     } catch (error) {
-      console.error('Error al obtener aspirante:', error)
+      // SEGURIDAD: Solo logear en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error al obtener aspirante por matrícula:', error)
+      }
       throw error
     }
   },
-
-  /**
-   * Validar estatus completo de un aspirante por matrícula
-   */
   async validarEstatus(matricula: string): Promise<ApiResponse<AspiranteEstatusCompleto>> {
     try {
       const response = await fetch(`${API_URL}/aspirantes/matricula/${matricula}`, {
@@ -221,7 +237,10 @@ export const api = {
 
       return data
     } catch (error) {
-      console.error('Error al validar estatus:', error)
+      // SEGURIDAD: Solo logear en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error al validar estatus:', error)
+      }
       throw error
     }
   },
@@ -246,7 +265,10 @@ export const api = {
 
       return data
     } catch (error) {
-      console.error('Error al obtener aspirante:', error)
+      // SEGURIDAD: Solo logear en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error al obtener aspirante por ID:', error)
+      }
       throw error
     }
   },
