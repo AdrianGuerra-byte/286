@@ -1,6 +1,7 @@
 // URL base del backend NestJS
 // Puerto 4000, ruta base /registro286
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hoyt-uncautious-jonnie.ngrok-free.dev/registro286'
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hoyt-uncautious-jonnie.ngrok-free.dev'
+const API_URL = `${BASE_URL}/registro286`
 
 // Interfaz para los exámenes
 // regulado: true = Licenciaturas con reconocimiento oficial completo
