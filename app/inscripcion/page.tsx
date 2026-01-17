@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Navigation } from "@/components/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,48 +9,187 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, ArrowRight, Check, Upload, CreditCard, CheckCircle2 } from "lucide-react"
-import examenesData from "@/data/examenes.json"
+import { ArrowLeft, ArrowRight, Check, Upload, CreditCard, CheckCircle2, AlertCircle, ExternalLink, FileCheck } from "lucide-react"
+import { api, generarUrlGoogleForms, type Examen } from "@/lib/api"
 
 export default function InscripcionPage() {
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     nombre: "",
-    apellidos: "",
+    apellido_paterno: "",
+    apellido_materno: "",
     email: "",
     telefono: "",
-    curp: "",
     examen: "",
-    documentos: [] as string[],
     aceptaTerminos: false,
   })
   const [folio, setFolio] = useState("")
+  const [numeroReferencia, setNumeroReferencia] = useState("")
+  const [examenes, setExamenes] = useState<Examen[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [googleFormsUrl, setGoogleFormsUrl] = useState("")
+  // Prevenir múltiples envíos: almacena timestamp del último envío
+  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0)
 
-  const generateFolio = () => {
-    const random = Math.floor(Math.random() * 900000) + 100000
-    return `CUH-${new Date().getFullYear()}-${random}`
-  }
+  // Cargar exámenes al montar el componente
+  useEffect(() => {
+    const cargarExamenes = async () => {
+      try {
+        const response = await api.getExamenes()
+        if (response.success && response.data) {
+          setExamenes(response.data)
+        }
+      } catch (err) {
+        console.error('Error al cargar exámenes:', err)
+        setError('Error al cargar los exámenes disponibles')
+      }
+    }
+    cargarExamenes()
+  }, [])
 
-  const handleFileUpload = (fileName: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      documentos: [...prev.documentos, fileName],
-    }))
-  }
+  const handleNext = async () => {
+    if (step === 1 && formData.nombre && formData.apellido_paterno && formData.email && formData.examen) {
+      // SEGURIDAD: Prevenir múltiples envíos en menos de 3 segundos (debounce)
+      const now = Date.now()
+      if (now - lastSubmitTime < 3000) {
+        setError('Por favor espera unos segundos antes de enviar nuevamente')
+        return
+      }
 
-  const handleNext = () => {
-    if (step === 1 && formData.nombre && formData.email && formData.examen) {
-      setStep(2)
-    } else if (step === 2 && formData.documentos.length > 0) {
-      setStep(3)
-    } else if (step === 3) {
-      const generatedFolio = generateFolio()
-      setFolio(generatedFolio)
-      setStep(4)
+      // SEGURIDAD: Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.email)) {
+        setError('Por favor ingresa un correo electrónico válido')
+        return
+      }
+
+      // SEGURIDAD: Validar que nombres solo contengan letras, espacios, acentos y guiones
+      const nombreRegex = /^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s-]+$/
+      if (!nombreRegex.test(formData.nombre)) {
+        setError('El nombre solo puede contener letras, espacios y guiones')
+        return
+      }
+      if (!nombreRegex.test(formData.apellido_paterno)) {
+        setError('El apellido paterno solo puede contener letras, espacios y guiones')
+        return
+      }
+      if (formData.apellido_materno && !nombreRegex.test(formData.apellido_materno)) {
+        setError('El apellido materno solo puede contener letras, espacios y guiones')
+        return
+      }
+
+      // SEGURIDAD: Validar longitud de campos para prevenir ataques
+      if (formData.nombre.length > 100 || formData.apellido_paterno.length > 100) {
+        setError('Los nombres no pueden exceder 100 caracteres')
+        return
+      }
+
+      // SEGURIDAD: Validar teléfono (requerido, exactamente 10 dígitos)
+      const telefonoLimpio = formData.telefono.replace(/[^0-9]/g, '') // Solo contar dígitos
+      if (!formData.telefono || telefonoLimpio.length !== 10) {
+        setError('El teléfono debe tener exactamente 10 dígitos')
+        return
+      }
+
+      // SEGURIDAD: Sanitizar inputs según tipo de dato
+      // Para nombres: remover caracteres peligrosos y números
+      const sanitizeName = (input: string) => {
+        return input
+          .trim()
+          .replace(/[<>"'`]/g, '') // Remover caracteres HTML/JS peligrosos
+          .replace(/[0-9]/g, '') // Remover números (no válidos en nombres)
+          .replace(/\s+/g, ' ') // Normalizar espacios múltiples
+      }
+
+      // Para teléfono: solo permitir números, +, -, espacios y paréntesis
+      const sanitizePhone = (input: string) => {
+        return input
+          .trim()
+          .replace(/[^0-9+\-\s()]/g, '') // Solo caracteres válidos para teléfono
+      }
+
+      // Para email: remover caracteres peligrosos pero mantener formato válido
+      const sanitizeEmail = (input: string) => {
+        return input
+          .trim()
+          .toLowerCase()
+          .replace(/[<>"'`\s]/g, '') // Remover caracteres peligrosos y espacios
+      }
+
+      setLoading(true)
+      setError(null)
+      setLastSubmitTime(now)
+
+      try {
+        // Preparar datos para enviar a la API (con sanitización específica por tipo)
+        const datosAspirante = {
+          nombre: sanitizeName(formData.nombre),
+          apellido_paterno: sanitizeName(formData.apellido_paterno),
+          apellido_materno: formData.apellido_materno ? sanitizeName(formData.apellido_materno) : undefined,
+          correo_electronico: sanitizeEmail(formData.email),
+          numero_telefonico: sanitizePhone(formData.telefono),
+          examen_id: parseInt(formData.examen),
+          metadata: {
+            documentos: {
+              ActaNacimiento: "Pendiente" as const,
+              INE: "Pendiente" as const,
+              CertificadoEstudios: "Pendiente" as const,
+              ComprobanteDomicilio: "Pendiente" as const,
+            }
+          }
+        }
+
+        // Llamar a la API
+        const response = await api.registrarAspirante(datosAspirante)
+
+        if (response.success && response.data) {
+          // Guardar el folio generado por la API
+          const matricula = response.data.aspirante.pseudo_matricula
+          setFolio(matricula)
+
+          // Guardar el número de referencia si viene en la respuesta
+          if (response.data.aspirante.numero_referencia) {
+            setNumeroReferencia(response.data.aspirante.numero_referencia)
+          }
+
+          // Generar URL de Google Forms con datos pre-llenados
+          const urlForms = generarUrlGoogleForms({
+            nombre: formData.nombre,
+            apellido_paterno: formData.apellido_paterno,
+            apellido_materno: formData.apellido_materno,
+            correo_electronico: formData.email,
+            numero_telefonico: formData.telefono,
+            matricula: matricula,
+          })
+          setGoogleFormsUrl(urlForms)
+
+          // Avanzar al paso de confirmación
+          setStep(2)
+        }
+      } catch (err: any) {
+        // SEGURIDAD: No exponer detalles del error en consola en producción
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error al registrar:', err)
+        }
+
+        // Mensajes genéricos para no exponer información del sistema
+        const mensajeGenerico = 'No pudimos procesar tu inscripción. Por favor, intenta nuevamente.'
+
+        if (err.message.includes('correo')) {
+          setError('El correo electrónico ya está registrado')
+        } else if (err.message.includes('examen')) {
+          setError('El examen seleccionado no está disponible')
+        } else {
+          setError(mensajeGenerico)
+        }
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
-  const progress = (step / 4) * 100
+  const progress = (step / 2) * 100
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,7 +209,7 @@ export default function InscripcionPage() {
 
               <div className="space-y-2">
                 <h1 className="font-serif font-bold text-3xl sm:text-4xl text-foreground">Proceso de Inscripción</h1>
-                <p className="text-lg text-muted-foreground">Paso {step} de 4</p>
+                <p className="text-lg text-muted-foreground">Paso {step} de 2</p>
               </div>
 
               {/* Progress Bar */}
@@ -78,6 +217,35 @@ export default function InscripcionPage() {
                 <div className="bg-primary h-full transition-all duration-300" style={{ width: `${progress}%` }} />
               </div>
             </div>
+
+            {/* Botón prominente para validar estatus */}
+            <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FileCheck className="w-7 h-7 text-primary" />
+                  </div>
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="font-serif font-bold text-xl text-foreground mb-1">
+                      ¿Ya realizaste tu inscripción?
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Consulta el estatus de tus documentos, pago y fecha de examen
+                    </p>
+                  </div>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="gap-2 whitespace-nowrap"
+                  >
+                    <Link href="/estatus">
+                      <FileCheck className="w-4 h-4" />
+                      Validar mi Estatus
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Step 1: Registro */}
             {step === 1 && (
@@ -91,23 +259,33 @@ export default function InscripcionPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="nombre">Nombre(s) *</Label>
+                    <Input
+                      id="nombre"
+                      placeholder="Juan"
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                    />
+                  </div>
+
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="nombre">Nombre(s) *</Label>
+                      <Label htmlFor="apellido_paterno">Apellido Paterno *</Label>
                       <Input
-                        id="nombre"
-                        placeholder="Juan"
-                        value={formData.nombre}
-                        onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                        id="apellido_paterno"
+                        placeholder="García"
+                        value={formData.apellido_paterno}
+                        onChange={(e) => setFormData({ ...formData, apellido_paterno: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="apellidos">Apellidos *</Label>
+                      <Label htmlFor="apellido_materno">Apellido Materno</Label>
                       <Input
-                        id="apellidos"
-                        placeholder="García López"
-                        value={formData.apellidos}
-                        onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+                        id="apellido_materno"
+                        placeholder="López"
+                        value={formData.apellido_materno}
+                        onChange={(e) => setFormData({ ...formData, apellido_materno: e.target.value })}
                       />
                     </div>
                   </div>
@@ -125,21 +303,18 @@ export default function InscripcionPage() {
 
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="telefono">Teléfono *</Label>
+                      <Label htmlFor="telefono">Teléfono * (10 dígitos)</Label>
                       <Input
                         id="telefono"
-                        placeholder="55 1234 5678"
+                        type="tel"
+                        placeholder="5512345678"
+                        maxLength={10}
                         value={formData.telefono}
-                        onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="curp">CURP *</Label>
-                      <Input
-                        id="curp"
-                        placeholder="GAGL850101HDFRRN09"
-                        value={formData.curp}
-                        onChange={(e) => setFormData({ ...formData, curp: e.target.value })}
+                        onChange={(e) => {
+                          // Solo permitir números
+                          const soloNumeros = e.target.value.replace(/[^0-9]/g, '')
+                          setFormData({ ...formData, telefono: soloNumeros })
+                        }}
                       />
                     </div>
                   </div>
@@ -154,8 +329,8 @@ export default function InscripcionPage() {
                         <SelectValue placeholder="Selecciona un examen" />
                       </SelectTrigger>
                       <SelectContent>
-                        {examenesData.map((exam) => (
-                          <SelectItem key={exam.id} value={exam.id}>
+                        {examenes.map((exam) => (
+                          <SelectItem key={exam.id} value={exam.id.toString()}>
                             {exam.nombre}
                           </SelectItem>
                         ))}
@@ -163,157 +338,28 @@ export default function InscripcionPage() {
                     </Select>
                   </div>
 
+                  {error && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+
                   <Button
                     onClick={handleNext}
-                    disabled={!formData.nombre || !formData.email || !formData.examen}
+                    disabled={!formData.nombre || !formData.apellido_paterno || !formData.email || !formData.examen || loading}
                     className="w-full gap-2"
                     size="lg"
                   >
-                    Continuar
+                    {loading ? 'Procesando...' : 'Continuar'}
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </CardContent>
               </Card>
             )}
 
-            {/* Step 2: Documentos */}
+            {/* Step 2: Confirmación */}
             {step === 2 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif text-2xl flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="text-primary font-bold">2</span>
-                    </div>
-                    Carga de Documentos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <p className="text-muted-foreground leading-relaxed">
-                    Sube los documentos requeridos en formato PDF o imagen (JPG, PNG). Tamaño máximo: 5 MB por archivo.
-                  </p>
-
-                  <div className="space-y-4">
-                    {["Identificación Oficial", "CURP", "Certificado de Estudios", "Comprobante de Domicilio"].map(
-                      (doc) => (
-                        <div
-                          key={doc}
-                          className="border-2 border-dashed border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
-                        >
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                              <Upload className="w-5 h-5 text-muted-foreground" />
-                              <div>
-                                <div className="font-medium text-foreground">{doc}</div>
-                                {formData.documentos.includes(doc) && (
-                                  <div className="text-sm text-primary flex items-center gap-1 mt-1">
-                                    <Check className="w-4 h-4" />
-                                    Cargado correctamente
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <Button
-                              variant={formData.documentos.includes(doc) ? "outline" : "default"}
-                              size="sm"
-                              onClick={() => handleFileUpload(doc)}
-                            >
-                              {formData.documentos.includes(doc) ? "Cambiar" : "Subir"}
-                            </Button>
-                          </div>
-                        </div>
-                      ),
-                    )}
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
-                      Atrás
-                    </Button>
-                    <Button onClick={handleNext} disabled={formData.documentos.length === 0} className="flex-1 gap-2">
-                      Continuar
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 3: Pago */}
-            {step === 3 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif text-2xl flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="text-primary font-bold">3</span>
-                    </div>
-                    Información de Pago
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-muted/50 rounded-xl p-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="w-6 h-6 text-primary" />
-                      <h3 className="font-semibold text-lg text-foreground">Datos Bancarios</h3>
-                    </div>
-
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Banco:</span>
-                        <span className="font-medium text-foreground">BBVA México</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Cuenta:</span>
-                        <span className="font-medium text-foreground">0123 4567 8901 2345</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">CLABE:</span>
-                        <span className="font-medium text-foreground">012 345 678 901 234 567</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Beneficiario:</span>
-                        <span className="font-medium text-foreground">Centro Universitario Hidalguense A.C.</span>
-                      </div>
-                      <div className="flex justify-between pt-3 border-t border-border">
-                        <span className="text-muted-foreground">Monto a pagar:</span>
-                        <span className="font-bold text-lg text-primary">
-                          {examenesData.find((e) => e.id === formData.examen)?.costo || "N/A"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="terminos"
-                        checked={formData.aceptaTerminos}
-                        onCheckedChange={(checked) => setFormData({ ...formData, aceptaTerminos: checked as boolean })}
-                      />
-                      <label
-                        htmlFor="terminos"
-                        className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
-                      >
-                        Acepto los términos y condiciones, políticas de privacidad y confirmo que la información
-                        proporcionada es correcta. Entiendo que el pago no es reembolsable.
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
-                      Atrás
-                    </Button>
-                    <Button onClick={handleNext} disabled={!formData.aceptaTerminos} className="flex-1 gap-2">
-                      Confirmar Registro
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 4: Confirmación */}
-            {step === 4 && (
               <Card className="border-2 border-primary/20">
                 <CardContent className="p-12 space-y-6 text-center">
                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
@@ -326,38 +372,100 @@ export default function InscripcionPage() {
                   </div>
 
                   <div className="bg-muted/50 rounded-xl p-6 space-y-4">
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Tu folio de registro es:</div>
-                      <div className="text-3xl font-bold font-mono text-primary">{folio}</div>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="text-sm text-muted-foreground">Tu matrícula es:</div>
+                        <div className="text-2xl font-bold font-mono text-primary">{folio}</div>
+                      </div>
+
+                      {numeroReferencia && (
+                        <div className="space-y-2 pt-3 border-t border-border">
+                          <div className="text-sm text-muted-foreground">Número de referencia para pago:</div>
+                          <div className="text-3xl font-bold font-mono text-primary">{numeroReferencia}</div>
+                        </div>
+                      )}
                     </div>
-
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Hemos enviado tu ficha de examen a <strong className="text-foreground">{formData.email}</strong>.
-                      Por favor, revisa tu bandeja de entrada y spam.
-                    </p>
                   </div>
 
-                  <div className="space-y-3 pt-4">
-                    <h3 className="font-semibold text-foreground">Indicaciones Importantes:</h3>
-                    <ul className="text-sm text-muted-foreground space-y-2 text-left max-w-md mx-auto">
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span>Imprime tu ficha y preséntala el día del examen</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span>Llega 30 minutos antes del inicio</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span>Lleva identificación oficial vigente</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span>No se permite el uso de dispositivos electrónicos</span>
-                      </li>
-                    </ul>
+                  <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-900 rounded-xl p-6">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div className="space-y-2 text-left">
+                        <h3 className="font-semibold text-foreground">Importante</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Hemos registrado tus datos correctamente. El próximo paso es <strong className="text-foreground">subir tus documentos</strong> usando el formulario de Google que encontrarás más abajo.
+                        </p>
+                      </div>
+                    </div>
                   </div>
+
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900 rounded-xl p-6">
+                    <h3 className="font-semibold text-lg text-foreground mb-4 text-left">Próximos Pasos</h3>
+                    <ol className="text-sm text-muted-foreground space-y-4 list-decimal list-inside text-left">
+                      <li className="leading-relaxed">
+                        <strong className="text-foreground">Sube tus documentos ahora:</strong> Utiliza el formulario de Google que
+                        encontrarás más abajo para subir:
+                        <ul className="ml-6 mt-2 space-y-1 list-disc list-inside">
+                          <li>Acta de Nacimiento</li>
+                          <li>Identificación Oficial (INE/Pasaporte)</li>
+                          <li>Certificado de Estudios</li>
+                          <li>Comprobante de Domicilio</li>
+                        </ul>
+                      </li>
+                      <li className="leading-relaxed">
+                        <strong className="text-foreground">Validación de documentos:</strong> Nuestro equipo revisará la autenticidad de tus documentos.
+                        Este proceso puede tomar de 2 a 3 días hábiles.
+                      </li>
+                      <li className="leading-relaxed">
+                        <strong className="text-foreground">Recibe tu ficha de pago:</strong> Una vez validados tus documentos,
+                        te enviaremos por correo tu <strong>ficha de pago</strong> con los datos bancarios e instrucciones.
+                      </li>
+                      <li className="leading-relaxed">
+                        <strong className="text-foreground">Realiza el pago:</strong> Usa tu número de referencia{" "}
+                        <span className="font-mono font-bold text-primary">{numeroReferencia || folio}</span> al realizar el pago.
+                      </li>
+                      <li className="leading-relaxed">
+                        <strong className="text-foreground">Envía tu comprobante:</strong> Envía tu comprobante de pago a{" "}
+                        <a
+                          href="mailto:Tesoreria286@cuh.mx"
+                          className="text-primary hover:underline font-semibold break-all"
+                        >
+                          Tesoreria286@cuh.mx
+                        </a>
+                      </li>
+                      <li className="leading-relaxed">
+                        <strong className="text-foreground">Recibe tu pase de entrada:</strong> Una vez confirmado tu pago,
+                        te enviaremos tu <strong>pase de entrada para el examen</strong>.
+                      </li>
+                    </ol>
+                  </div>
+
+                  {googleFormsUrl && (
+                    <div className="bg-primary/5 border-2 border-primary/20 rounded-xl p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <Upload className="w-6 h-6 text-primary" />
+                          <h3 className="font-semibold text-xl text-foreground">
+                            Paso 1: Sube tus Documentos Ahora
+                          </h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed text-left">
+                          Es importante que subas tus documentos <strong className="text-foreground">lo antes posible</strong> para que podamos
+                          validarlos y enviarte tu ficha de pago. Hemos pre-llenado tu información para hacer el proceso más rápido.
+                        </p>
+                        <Button
+                          asChild
+                          className="w-full gap-2"
+                          size="lg"
+                        >
+                          <a href={googleFormsUrl} target="_blank" rel="noopener noreferrer">
+                            Subir Documentos Ahora
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row gap-3 pt-6">
                     <Button asChild variant="outline" className="flex-1 bg-transparent">

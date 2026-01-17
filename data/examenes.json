@@ -1,8 +1,9 @@
 [
-   {
+  {
     "id": "pedagogia",
     "nombre": "Licenciatura en Pedagogía",
     "categoria": "Nivel Superior",
+    "regulado": true,
     "descripcion": "Evaluación de conocimientos fundamentales y específicos del campo de la Pedagogía.",
     "modalidad": "Evaluación Global",
     "duracion": "4-6 horas",
@@ -23,6 +24,7 @@
     "id": "administracion",
     "nombre": "Licenciatura en Administración",
     "categoria": "Nivel Superior",
+    "regulado": true,
     "descripcion": "Evaluación de conocimientos específicos en el área de administración.",
     "modalidad": "Evaluación Global",
     "duracion": "4-6 horas",
@@ -39,10 +41,11 @@
     "fechaExamen": "Fechas flexibles",
     "fechaResultados": "45 días post-evaluación"
   },
- {
+  {
     "id": "sistemas",
     "nombre": "Licenciatura en Ciencias Computacionales",
     "categoria": "Nivel Superior",
+    "regulado": true,
     "descripcion": "Evaluación de conocimientos específicos en el área de Ciencias Computacionales.",
     "modalidad": "Evaluación Global",
     "duracion": "4-6 horas",
@@ -63,6 +66,7 @@
     "id": "contaduria",
     "nombre": "Licenciatura en Contaduría",
     "categoria": "Nivel Superior",
+    "regulado": false,
     "descripcion": "Evaluación de conocimientos específicos en el área de Contaduría. Este programa requiere al menos 50% de créditos cursados.",
     "modalidad": "Evaluación Global",
     "duracion": "4-6 horas",
@@ -83,6 +87,7 @@
     "id": "derecho",
     "nombre": "Licenciatura en Derecho",
     "categoria": "Nivel Superior",
+    "regulado": false,
     "descripcion": "Evaluación de conocimientos específicos en el área de Derecho. Este programa requiere al menos 50% de créditos cursados.",
     "modalidad": "Evaluación Global",
     "duracion": "4-6 horas",
@@ -98,5 +103,5 @@
     "fechaRegistro": "Abierto todo el año",
     "fechaExamen": "Fechas flexibles",
     "fechaResultados": "45 días post-evaluación"
- }
+  }
 ]
