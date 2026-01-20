@@ -23,6 +23,8 @@ export function ExamCatalog() {
   const examDetail = selectedExam
     ? examenesDetalleData.find((detail) => detail.id === selectedExam.id)
     : null;
+  const examenesRegulados = examenesData.filter ((exam:any) => exam.regulado === true);
+  const examenesNoRegulados = examenesData.filter ((exam:any) => exam.regulado === false);
 
   /**
    * SEPARACIÓN DE EXÁMENES POR TIPO DE REGULACIÓN
@@ -55,75 +57,55 @@ export function ExamCatalog() {
               <h2 className="font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-foreground text-balance">
                 Licenciaturas.
               </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed text-pretty">
-                Elige la licenciatura que deseas acreditar.
-              </p>
-            </div>
+              {examenesNoRegulados.length > 0 && (
+                <div className="space-y-6">
+                  <span className="flex items-center">
+                      <span className="h-px flex-1 bg-gray-300"></span>
 
-            {/*
-              SECCIÓN 1: LICENCIATURAS REGULADAS
+                      <span className="shrink-0 px-12 text-xl text-muted-foreground">
+                        Examenes no regulados
+                      </span>
 
-              Renderizado condicional: Solo se muestra si existen exámenes regulados (length > 0)
-              El operador && evalúa la condición y solo ejecuta el JSX si es verdadera
+                      <span className="h-px flex-1 bg-gray-300"></span>
+                    </span>
 
-              Características visuales:
-              - Borde izquierdo azul (border-primary) para identificación visual
-              - Grid responsive: 1 columna (móvil), 2 (tablet), 3 (desktop)
-              - Cada tarjeta se renderiza con <ExamCard> usando .map()
-            */}
-            {examenesRegulados.length > 0 && (
-              <div className="space-y-6">
-                <div className="border-l-4 border-primary pl-4">
-                  <h3 className="font-serif font-bold text-2xl text-foreground">
-                    Licenciaturas Reguladas
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Programas con reconocimiento oficial y validez completa
-                  </p>
-                </div>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {examenesNoRegulados.map((exam) => (
+                      <ExamCard
+                        key={exam.id}
+                        exam={exam}
+                        onViewDetails={() => handleViewDetails(exam.id, exam.nombre)}
+                      />
+                    ))}
+                  </div>
+                </div>)}
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {examenesRegulados.map((exam) => (
-                    <ExamCard
-                      key={exam.id}
-                      exam={exam}
-                      onViewDetails={() => handleViewDetails(exam.id, exam.nombre)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+                {examenesRegulados.length > 0 && (
+                <div className="space-y-6">
+                  
+                    <span className="flex items-center">
+                      <span className="h-px flex-1 bg-gray-300"></span>
 
-            {/*
-              SECCIÓN 2: LICENCIATURAS NO REGULADAS
+                      <span className="shrink-0 px-12 text-xl text-muted-foreground">
+                        Examenes regulados
+                      </span>
 
-              Funcionamiento idéntico a la sección de reguladas, pero con:
-              - Borde izquierdo amarillo (border-amber-500) para diferenciar visualmente
-              - Renderiza solo los exámenes con regulado: false
-              - Mensaje diferente indicando requisito del 50% de créditos
-            */}
-            {examenesNoRegulados.length > 0 && (
-              <div className="space-y-6">
-                <div className="border-l-4 border-amber-500 pl-4">
-                  <h3 className="font-serif font-bold text-2xl text-foreground">
-                    Licenciaturas No Reguladas
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Programas que requieren al menos 50% de créditos cursados
-                  </p>
-                </div>
+                      <span className="h-px flex-1 bg-gray-300"></span>
+                    </span>
+                  
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {examenesNoRegulados.map((exam) => (
-                    <ExamCard
-                      key={exam.id}
-                      exam={exam}
-                      onViewDetails={() => handleViewDetails(exam.id, exam.nombre)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {examenesRegulados.map((exam) => (
+                      <ExamCard
+                        key={exam.id}
+                        exam={exam}
+                        onViewDetails={() => handleViewDetails(exam.id, exam.nombre)}
+                      />
+                    ))}
+                  </div>
+                </div>)}
+             </div>
+              
           </div>
         </div>
       </section>

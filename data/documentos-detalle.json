@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "requisito": "Acta de Nacimiento (Actualizada)",
+    "imagen": "/acta_nacimiento.avif"
+  },
+   {
+    "id": 2,
+    "requisito": "Clave Única de Registro de Población (CURP - Certificada: Verificada con el Registro Civil)",
+    "imagen": "/CURP.avif"
+  },
+   {
+    "id": 3,
+    "requisito": "Identificación Oficial Vigente (INE)",
+    "imagen": "/INE.avif"
+  },
+   {
+    "id": 4,
+    "requisito": "Certificado de Nivel Medio Superior (Legalizado)",
+    "imagen": ""
+  },
+   {
+    "id": 5,
+    "requisito": "  Curriculum Vitae",
+    "imagen": ""
+  },
+   {
+    "id": 6,
+    "requisito": "Constancia de estudios con al menos 50% de créditos concluidos (Lic. en Derecho y Lic. en Contaduría)",
+    "imagen": ""
+  }
+]
