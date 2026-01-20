@@ -42,7 +42,7 @@ export interface AspiranteResponse {
   apellido_materno: string | null
   correo_electronico: string
   numero_telefonico: string
-  pseudo_matricula: string
+  folio: string
   numero_referencia?: string
   fecha_aplicacion_examen: string
   estatus_pago: boolean
