@@ -1,5 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { FileCheck, AlertCircle, Users, Baby } from "lucide-react";
+import preguntasData from "@/data/documentos-detalle.json";
+import Image from "next/image";
+
+
+
+      type Requisito = {
+        id: number;
+        requisito: string;
+        imagen?: string;
+        url?: string;
+      };
 
 export function RequirementsSection() {
   return (
@@ -20,7 +32,70 @@ export function RequirementsSection() {
             </p>
           </div>
 
-          {/* Main Documentation Card */}
+          <Accordion type="single" collapsible className="space-y-5">
+            {(preguntasData as Requisito[]).map((faq) => (
+              <AccordionItem
+                key={faq.id}
+                value={`item-${faq.id}`}
+                className="
+                  border border-border
+                  rounded-xl
+                  px-6
+                  bg-background
+                  data-[state=open]:border-primary/30
+                  transition-colors
+                "
+              >
+                <AccordionTrigger className="text-left py-5">
+                  <span className="font-medium text-foreground text-base md:text-lg">
+                    {faq.requisito}
+                  </span>
+                </AccordionTrigger>
+
+                <AccordionContent className="pb-5 text-muted-foreground leading-relaxed space-y-4">
+                  {faq.imagen ? (
+                    <Image
+                      src={faq.imagen}
+                      alt={faq.requisito}
+                      width={800}
+                      height={500}
+                      className="rounded-lg mx-auto"
+                    />
+                  ) : (
+                    <p className="text-sm italic text-center">
+                      No hay imagen disponible
+                    </p>
+                  )}
+                   {faq.url && (
+                  <div className="flex justify-center">
+                    <a
+                      href={faq.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="
+                        inline-flex items-center justify-center gap-2
+                        mt-4 px-5 py-3
+                        bg-primary hover:bg-primary/90
+                        text-white font-medium
+                        rounded-lg
+                        transition-colors
+                      "
+                    >
+                      Ir al sitio web
+                    </a>
+                  </div>
+                )}
+
+                </AccordionContent>
+                
+              </AccordionItem>
+            ))}
+
+            
+          </Accordion>
+          
+
+          {/* Main Documentation Card 
           <Card className="border-2 border-primary/20 hover:border-primary/40 transition-colors hover:shadow-xl duration-300 group">
             <CardContent className="p-8 lg:p-10 space-y-6">
               <div className="flex items-center gap-4 mb-2">
@@ -52,6 +127,8 @@ export function RequirementsSection() {
               </ul>
             </CardContent>
           </Card>
+          
+          
 
           {/* Grid with Experience and Additional Info */}
           {/* <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
