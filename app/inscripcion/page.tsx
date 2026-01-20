@@ -145,7 +145,7 @@ export default function InscripcionPage() {
 
         if (response.success && response.data) {
           // Guardar el folio generado por la API
-          const matricula = response.data.aspirante.pseudo_matricula
+          const matricula = response.data.aspirante.folio
           setFolio(matricula)
 
           // Guardar el número de referencia si viene en la respuesta
