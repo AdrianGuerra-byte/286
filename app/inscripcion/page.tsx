@@ -381,7 +381,7 @@ export default function InscripcionPage() {
                   <div className="bg-muted/50 rounded-xl p-6 space-y-4">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <div className="text-sm text-muted-foreground">Tu matrícula es:</div>
+                        <div className="text-sm text-muted-foreground">Tu folio es:</div>
                         <div className="text-2xl font-bold font-mono text-primary">{folio}</div>
                       </div>
 
@@ -394,7 +394,7 @@ export default function InscripcionPage() {
                     </div>
                   </div>
 
-                  <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-900 rounded-xl p-6">
+                  {/* <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-900 rounded-xl p-6">
                     <div className="flex items-start gap-3">
                       <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                       <div className="space-y-2 text-left">
@@ -404,7 +404,7 @@ export default function InscripcionPage() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900 rounded-xl p-6">
                     <h3 className="font-semibold text-lg text-foreground mb-4 text-left">Próximos Pasos</h3>
@@ -414,7 +414,7 @@ export default function InscripcionPage() {
                         encontrarás más abajo para subir:
                         <ul className="ml-6 mt-2 space-y-1 list-disc list-inside">
                           <li>Acta de Nacimiento</li>
-                          <li>Identificación Oficial (INE/Pasaporte)</li>
+                          <li>Identificación Oficial (INE)</li>
                           <li>Certificado de Estudios</li>
                           <li>Comprobante de Domicilio</li>
                         </ul>
@@ -428,8 +428,7 @@ export default function InscripcionPage() {
                         te enviaremos por correo tu <strong>ficha de pago</strong> con los datos bancarios e instrucciones.
                       </li>
                       <li className="leading-relaxed">
-                        <strong className="text-foreground">Realiza el pago:</strong> Usa tu número de referencia{" "}
-                        <span className="font-mono font-bold text-primary">{numeroReferencia || folio}</span> al realizar el pago.
+                        <strong className="text-foreground">Realiza el pago:</strong> Usa tu ficha y sigue las instrucciones para realizar el pago.
                       </li>
                       <li className="leading-relaxed">
                         <strong className="text-foreground">Envía tu comprobante:</strong> Envía tu comprobante de pago a{" "}
@@ -448,26 +447,25 @@ export default function InscripcionPage() {
                   </div>
 
                   {googleFormsUrl && (
-                    <div className="bg-primary/5 border-2 border-primary/20 rounded-xl p-6">
+                    <div className="bg-primary/10 border-4 border-primary rounded-xl p-6 shadow-lg">
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <Upload className="w-6 h-6 text-primary" />
-                          <h3 className="font-semibold text-xl text-foreground">
-                            Paso 1: Sube tus Documentos Ahora
+                          <Upload className="w-8 h-8 text-primary" />
+                          <h3 className="font-semibold text-2xl text-primary">
+                            Paso 2: Sube tus Documentos Ahora
                           </h3>
                         </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed text-left">
-                          Es importante que subas tus documentos <strong className="text-foreground">lo antes posible</strong> para que podamos
-                          validarlos y enviarte tu ficha de pago. Hemos pre-llenado tu información para hacer el proceso más rápido.
+                        <p className="text-md text-primary leading-relaxed text-left">
+                          Es importante que subas tus documentos <strong>lo antes posible</strong> para que podamos validarlos y enviarte tu ficha de pago.
                         </p>
                         <Button
                           asChild
-                          className="w-full gap-2"
+                          className="w-full gap-2 bg-primary text-white hover:bg-primary/90 focus:ring focus:ring-primary/50"
                           size="lg"
                         >
                           <a href={googleFormsUrl} target="_blank" rel="noopener noreferrer">
                             Subir Documentos Ahora
-                            <ExternalLink className="w-4 h-4" />
+                            <ExternalLink className="w-5 h-5" />
                           </a>
                         </Button>
                       </div>
