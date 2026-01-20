@@ -36,7 +36,7 @@ export default function EstatusPage() {
   const validarEstatus = async () => {
     // SEGURIDAD: Validación básica de entrada
     if (!matricula.trim()) {
-      setError("Por favor, ingresa tu matrícula")
+      setError("Por favor, ingresa tu folio")
       return
     }
 
@@ -59,7 +59,7 @@ export default function EstatusPage() {
     const matriculaLimpia = matricula.trim().toUpperCase()
 
     if (!matriculaPattern.test(matriculaLimpia)) {
-      setError("Formato de matrícula inválido. Debe ser: A + 11 dígitos (ej: A28691261000)")
+      setError("Formato de folio inválido. Debe ser: A + 11 dígitos (ej: A28691261000)")
       return
     }
 
@@ -91,7 +91,7 @@ export default function EstatusPage() {
 
       // Mensaje genérico para proteger información del sistema
       if (err.message.includes('encontró')) {
-        setError("No se encontró ningún registro con esa matrícula")
+        setError("No se encontró ningún registro con ese folio")
       } else {
         setError("No pudimos consultar tu información. Por favor, intenta nuevamente.")
       }
@@ -176,7 +176,7 @@ export default function EstatusPage() {
                 <CardContent className="space-y-6">
                   <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
                     <p className="text-sm text-blue-900 dark:text-blue-100 leading-relaxed">
-                      Ingresa tu matrícula completa para consultar el estatus de tu inscripción,
+                      Ingresa tu folio completo para consultar el estatus de tu inscripción,
                       documentos y proceso de pago.
                     </p>
                   </div>
@@ -247,7 +247,7 @@ export default function EstatusPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Card>
                     <CardContent className="p-6 space-y-1">
-                      <p className="text-sm text-muted-foreground">Matrícula</p>
+                      <p className="text-sm text-muted-foreground">Folio</p>
                       <p className="font-mono font-bold text-2xl text-primary">
                         {aspirante.matricula}
                       </p>
