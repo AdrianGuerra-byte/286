@@ -226,81 +226,46 @@ export default function EstatusPage() {
               <div className="space-y-6 animate-in fade-in duration-500">
                 {/* Encabezado con nombre */}
                 <Card className="border-2 border-primary/20">
-                  <CardContent className="p-6">
-                    <h2 className="font-serif font-bold text-2xl text-foreground mb-3">
+                  <CardContent className="p-6 text-center">
+                    <h2 className="font-serif font-bold text-3xl text-primary mb-2">
                       {aspirante.nombre_completo}
                     </h2>
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
-                        {aspirante.correo_electronico}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
-                        {aspirante.numero_telefonico}
-                      </div>
-                    </div>
+                    <p className="text-lg text-muted-foreground">
+                     Folio: {aspirante.matricula}
+                    </p>
                   </CardContent>
                 </Card>
-
-                {/* Grid de información */}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="p-6 space-y-1">
-                      <p className="text-sm text-muted-foreground">Folio</p>
-                      <p className="font-mono font-bold text-2xl text-primary">
-                        {aspirante.matricula}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6 space-y-1">
-                      <p className="text-sm text-muted-foreground">Número de Referencia</p>
-                      <p className="font-mono font-bold text-2xl text-primary">
-                        {aspirante.numero_referencia}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
 
                 {/* Examen */}
                 <Card>
-                  <CardContent className="p-6 flex items-center gap-4">
-                    <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <GraduationCap className="w-7 h-7 text-primary" />
+                  <CardContent className="p-6 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                    {/* Examen a presentar */}
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <GraduationCap className="w-7 h-7 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Examen a Presentar</p>
+                        <p className="font-semibold text-lg text-foreground">{aspirante.examen.nombre}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Examen a Presentar</p>
-                      <p className="font-semibold text-lg text-foreground">{aspirante.examen.nombre}</p>
+
+                    {/* Divisor */}
+                    <div className="hidden sm:block w-px bg-primary h-full mx-4"></div>
+
+                    {/* Fechas */}
+                    <div className="flex flex-col gap-4 sm:gap-2 text-right">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Fecha de Inscripción</p>
+                        <p className="font-medium text-foreground">{formatearFecha(aspirante.fecha_solicitud)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Fecha del Examen</p>
+                        <p className="font-medium text-foreground">{formatearFecha(aspirante.fecha_aplicacion_examen)}</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Fechas */}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="p-6 flex items-start gap-3">
-                      <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Fecha de Inscripción</p>
-                        <p className="font-medium text-foreground">
-                          {formatearFecha(aspirante.fecha_solicitud)}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6 flex items-start gap-3">
-                      <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Fecha del Examen</p>
-                        <p className="font-medium text-foreground">
-                          {formatearFecha(aspirante.fecha_aplicacion_examen)}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
 
                 {/* Estatus de documentos */}
                 <Card className="border-2">
@@ -321,23 +286,37 @@ export default function EstatusPage() {
                         { key: "ine", label: "INE / Identificación Oficial" },
                         { key: "certificado_estudios", label: "Certificado de Estudios" },
                         { key: "comprobante_domicilio", label: "Comprobante de Domicilio" },
-                      ].map((doc) => (
-                        <div
-                          key={doc.key}
-                          className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
-                        >
-                          <span className="font-medium text-foreground">{doc.label}</span>
-                          <div className="flex items-center gap-2">
-                            {getIconoEstatus(
-                              aspirante.estatus_documentos[doc.key as keyof typeof aspirante.estatus_documentos]
+                      ].map((doc) => {
+                        const estatus = aspirante.estatus_documentos[doc.key as keyof typeof aspirante.estatus_documentos]
+                        return (
+                          <div
+                            key={doc.key}
+                            className="flex flex-col p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-foreground">{doc.label}</span>
+                              <div className="flex items-center gap-2">
+                                {getIconoEstatus(estatus)}
+                                <span className="text-sm font-medium">{estatus}</span>
+                              </div>
+                            </div>
+                            {estatus.toLowerCase() === "rechazado" && (
+                              <p className="text-sm text-red-600 mt-2">
+                                Observación: El documento no cumple con los requisitos. (Prueba)
+                              </p>
                             )}
-                            <span className="text-sm font-medium">
-                              {aspirante.estatus_documentos[doc.key as keyof typeof aspirante.estatus_documentos]}
-                            </span>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
+
+                    <Button
+                      onClick={() => alert('Funcionalidad para subir documentos próximamente')}
+                      size="lg"
+                      className="w-full gap-2 mt-4"
+                    >
+                      Subir documentos de nuevo
+                    </Button>
                   </CardContent>
                 </Card>
 
@@ -375,13 +354,10 @@ export default function EstatusPage() {
                             <p className="text-sm text-amber-700 dark:text-amber-200 mt-1">
                               Una vez que tus documentos sean validados, recibirás tu ficha de pago.
                             </p>
+                            <p className="text-sm font-bold text-amber-900 dark:text-amber-100 mt-2">
+                              Si ya realizaste el pago, por favor espera a que se procese. Este proceso puede tardar hasta <strong>48 horas</strong>.
+                            </p>
                           </div>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 rounded p-3 border border-amber-200 dark:border-amber-800">
-                          <p className="text-xs text-muted-foreground mb-1">Tu número de referencia para pago:</p>
-                          <p className="font-mono font-bold text-lg text-primary">
-                            {aspirante.numero_referencia}
-                          </p>
                         </div>
                       </div>
                     )}
