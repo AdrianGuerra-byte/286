@@ -26,6 +26,27 @@ export function ExamCatalog() {
   const examenesRegulados = examenesData.filter ((exam:any) => exam.regulado === true);
   const examenesNoRegulados = examenesData.filter ((exam:any) => exam.regulado === false);
 
+  /**
+   * SEPARACIÓN DE EXÁMENES POR TIPO DE REGULACIÓN
+   *
+   * Los exámenes se dividen en dos categorías según el campo "regulado" del JSON:
+   *
+   * 1. REGULADOS (regulado: true):
+   *    - Licenciaturas con reconocimiento oficial completo
+   *    - Ejemplos: Pedagogía, Administración, Sistemas
+   *    - No requieren créditos previos, solo experiencia laboral
+   *
+   * 2. NO REGULADOS (regulado: false):
+   *    - Licenciaturas que requieren al menos 50% de créditos cursados
+   *    - Ejemplos: Contaduría, Derecho
+   *    - Además de experiencia, necesitan haber cursado la mitad de la carrera
+   *
+   * El método .filter() recorre el array de exámenes del JSON y crea dos arrays separados
+   * basándose en el valor del campo "regulado"
+   */
+  const examenesRegulados = examenesData.filter((exam: any) => exam.regulado === true);
+  const examenesNoRegulados = examenesData.filter((exam: any) => exam.regulado === false);
+
   return (
     <>
       <section id="oferta" className="py-16 lg:py-24 bg-background">

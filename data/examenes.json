@@ -1,5 +1,5 @@
 [
-   {
+  {
     "id": "pedagogia",
     "nombre": "Licenciatura en Pedagogía",
     "categoria": "Nivel Superior",
@@ -41,7 +41,7 @@
     "fechaExamen": "Fechas flexibles",
     "fechaResultados": "45 días post-evaluación"
   },
- {
+  {
     "id": "sistemas",
     "nombre": "Licenciatura en Ciencias Computacionales",
     "categoria": "Nivel Superior",
@@ -104,5 +104,5 @@
     "fechaRegistro": "Abierto todo el año",
     "fechaExamen": "Fechas flexibles",
     "fechaResultados": "45 días post-evaluación"
- }
+  }
 ]
