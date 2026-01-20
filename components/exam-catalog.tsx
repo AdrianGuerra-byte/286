@@ -44,9 +44,6 @@ export function ExamCatalog() {
    * El método .filter() recorre el array de exámenes del JSON y crea dos arrays separados
    * basándose en el valor del campo "regulado"
    */
-  const examenesRegulados = examenesData.filter((exam: any) => exam.regulado === true);
-  const examenesNoRegulados = examenesData.filter((exam: any) => exam.regulado === false);
-
   return (
     <>
       <section id="oferta" className="py-16 lg:py-24 bg-background">
@@ -82,7 +79,7 @@ export function ExamCatalog() {
 
                 {examenesRegulados.length > 0 && (
                 <div className="space-y-6">
-                  
+
                     <span className="flex items-center">
                       <span className="h-px flex-1 bg-gray-300"></span>
 
@@ -92,7 +89,7 @@ export function ExamCatalog() {
 
                       <span className="h-px flex-1 bg-gray-300"></span>
                     </span>
-                  
+
 
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {examenesRegulados.map((exam) => (
@@ -105,7 +102,7 @@ export function ExamCatalog() {
                   </div>
                 </div>)}
              </div>
-              
+
           </div>
         </div>
       </section>
