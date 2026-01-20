@@ -143,9 +143,11 @@ export default function InscripcionPage() {
         // Llamar a la API
         const response = await api.registrarAspirante(datosAspirante)
 
+        console.log('Respuesta de la API:', response);
+
         if (response.success && response.data) {
           // Guardar el folio generado por la API
-          const matricula = response.data.aspirante.pseudo_matricula
+          const matricula = response.data.aspirante.folio
           setFolio(matricula)
 
           // Guardar el número de referencia si viene en la respuesta
@@ -190,6 +192,11 @@ export default function InscripcionPage() {
   }
 
   const progress = (step / 2) * 100
+
+  // Efecto para depurar el valor de folio
+  useEffect(() => {
+    console.log('Valor de folio actualizado:', folio);
+  }, [folio]);
 
   return (
     <div className="min-h-screen bg-background">
