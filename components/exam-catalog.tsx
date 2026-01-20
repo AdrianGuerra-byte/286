@@ -23,6 +23,8 @@ export function ExamCatalog() {
   const examDetail = selectedExam
     ? examenesDetalleData.find((detail) => detail.id === selectedExam.id)
     : null;
+  const examenesRegulados = examenesData.filter ((exam:any) => exam.regulado === true);
+  const examenesNoRegulados = examenesData.filter ((exam:any) => exam.regulado === false);
 
   return (
     <>
@@ -34,21 +36,55 @@ export function ExamCatalog() {
               <h2 className="font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-foreground text-balance">
                 Licenciaturas.
               </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed text-pretty">
-                Elige la licenciatura que deseas acreditar.
-              </p>
-            </div>
+              {examenesNoRegulados.length > 0 && (
+                <div className="space-y-6">
+                  <span className="flex items-center">
+                      <span className="h-px flex-1 bg-gray-300"></span>
 
-            {/* Exam Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {examenesData.map((exam) => (
-                <ExamCard
-                  key={exam.id}
-                  exam={exam}
-                  onViewDetails={() => handleViewDetails(exam.id, exam.nombre)}
-                />
-              ))}
-            </div>
+                      <span className="shrink-0 px-12 text-xl text-muted-foreground">
+                        Examenes no regulados
+                      </span>
+
+                      <span className="h-px flex-1 bg-gray-300"></span>
+                    </span>
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {examenesNoRegulados.map((exam) => (
+                      <ExamCard
+                        key={exam.id}
+                        exam={exam}
+                        onViewDetails={() => handleViewDetails(exam.id, exam.nombre)}
+                      />
+                    ))}
+                  </div>
+                </div>)}
+
+                {examenesRegulados.length > 0 && (
+                <div className="space-y-6">
+                  
+                    <span className="flex items-center">
+                      <span className="h-px flex-1 bg-gray-300"></span>
+
+                      <span className="shrink-0 px-12 text-xl text-muted-foreground">
+                        Examenes regulados
+                      </span>
+
+                      <span className="h-px flex-1 bg-gray-300"></span>
+                    </span>
+                  
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {examenesRegulados.map((exam) => (
+                      <ExamCard
+                        key={exam.id}
+                        exam={exam}
+                        onViewDetails={() => handleViewDetails(exam.id, exam.nombre)}
+                      />
+                    ))}
+                  </div>
+                </div>)}
+             </div>
+              
           </div>
         </div>
       </section>
