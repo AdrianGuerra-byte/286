@@ -47,6 +47,7 @@ const nextConfig = {
               "img-src 'self' data: https:",
               "font-src 'self' data:",
               "connect-src 'self' http://localhost:4000 http://localhost:3000 https://hoyt-uncautious-jonnie.ngrok-free.dev https://*.vercel-insights.com https://*.vercel-analytics.com",
+              "frame-src 'self' https://www.google.com",
               "frame-ancestors 'none'",
             ].join('; '),
           },
