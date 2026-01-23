@@ -22,6 +22,7 @@ export default function InscripcionPage() {
     telefono: "",
     examen: "",
     aceptaTerminos: false,
+    curp: "",
   })
   const [folio, setFolio] = useState("")
   const [numeroReferencia, setNumeroReferencia] = useState("")
@@ -85,14 +86,33 @@ export default function InscripcionPage() {
         return
       }
 
-      // SEGURIDAD: Validar teléfono (requerido, exactamente 10 dígitos)
+      // SEGURIDAD: Validar teléfono (entre 10 y 15 dígitos)
       const telefonoLimpio = formData.telefono.replace(/[^0-9]/g, '') // Solo contar dígitos
-      if (!formData.telefono || telefonoLimpio.length !== 10) {
-        setError('El teléfono debe tener exactamente 10 dígitos')
+      if (!formData.telefono || telefonoLimpio.length < 10 || telefonoLimpio.length > 15) {
+        setError('El teléfono debe tener entre 10 y 15 dígitos')
         return
       }
 
+      // SEGURIDAD: Validar CURP sólo si fue proporcionada (es opcional)
+      const curpClean = formData.curp.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+      if (formData.curp && formData.curp.trim().length > 0) {
+        if (curpClean.length !== 18) {
+          setError('La CURP debe contener 18 caracteres alfanuméricos')
+          return
+        }
+        const curpRegex = /^[A-Z0-9]{18}$/
+        if (!curpRegex.test(curpClean)) {
+          setError('La CURP sólo puede contener letras y números (18 caracteres)')
+          return
+        }
+      }
+
       // SEGURIDAD: Sanitizar inputs según tipo de dato
+      // Para CURP: mantener mayúsculas y remover caracteres inválidos
+      const sanitizeCurp = (input: string) => {
+        return input.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+      }
+
       // Para nombres: remover caracteres peligrosos y números
       const sanitizeName = (input: string) => {
         return input
@@ -129,6 +149,7 @@ export default function InscripcionPage() {
           apellido_materno: formData.apellido_materno ? sanitizeName(formData.apellido_materno) : undefined,
           correo_electronico: sanitizeEmail(formData.email),
           numero_telefonico: sanitizePhone(formData.telefono),
+          curp: sanitizeCurp(formData.curp),
           examen_id: parseInt(formData.examen),
           metadata: {
             documentos: {
@@ -146,13 +167,23 @@ export default function InscripcionPage() {
         console.log('Respuesta de la API:', response);
 
         if (response.success && response.data) {
-          // Guardar el folio generado por la API
-          const matricula = response.data.aspirante.folio
+          // Guardar el folio generado por la API (soporta varios nombres devueltos por el servidor)
+          const aspir = response.data.aspirante as any
+          const matricula = aspir.folio || aspir.pseudo_matricula || aspir.matricula || aspir.pseudoMatricula || ''
           setFolio(matricula)
 
           // Guardar el número de referencia si viene en la respuesta
-          if (response.data.aspirante.numero_referencia) {
-            setNumeroReferencia(response.data.aspirante.numero_referencia)
+          if (aspir.numero_referencia) {
+            setNumeroReferencia(aspir.numero_referencia)
+          }
+
+          // Guardar folio y correo localmente por usabilidad (para futuras consultas)
+          try {
+            localStorage.setItem('registro:folio', matricula)
+            localStorage.setItem('registro:correo', datosAspirante.correo_electronico)
+          } catch (e) {
+            // Ignorar errores de storage en entornos restringidos
+            if (process.env.NODE_ENV === 'development') console.warn('No se pudo guardar en localStorage:', e)
           }
 
           // Generar URL de Google Forms con datos pre-llenados
@@ -308,8 +339,9 @@ export default function InscripcionPage() {
                     />
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-6">
-                    <div className="space-y-2">
+                  {/* CAMBIO REALIZADO: Grid de 3 columnas para Teléfono (1/3) y CURP (2/3) */}
+                  <div className="grid sm:grid-cols-3 gap-6">
+                    <div className="space-y-2 sm:col-span-1">
                       <Label htmlFor="telefono">Teléfono * (10 dígitos)</Label>
                       <Input
                         id="telefono"
@@ -323,6 +355,17 @@ export default function InscripcionPage() {
                           setFormData({ ...formData, telefono: soloNumeros })
                         }}
                       />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="curp">CURP</Label>
+                      <Input
+                        id="curp"
+                        placeholder="AAAA000000HDFXXX00"
+                        value={formData.curp}
+                        maxLength={18}
+                        onChange={(e) => setFormData({ ...formData, curp: e.target.value.toUpperCase().replace(/[^A-Z0-9]/gi, '') })}
+                      />
+                      <p className="text-xs text-muted-foreground">Ingresa los 18 caracteres alfanuméricos.</p>
                     </div>
                   </div>
 
@@ -394,18 +437,6 @@ export default function InscripcionPage() {
                     </div>
                   </div>
 
-                  {/* <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-900 rounded-xl p-6">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                      <div className="space-y-2 text-left">
-                        <h3 className="font-semibold text-foreground">Importante</h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          Hemos registrado tus datos correctamente. El próximo paso es <strong className="text-foreground">subir tus documentos</strong> usando el formulario de Google que encontrarás más abajo.
-                        </p>
-                      </div>
-                    </div>
-                  </div> */}
-
                   <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900 rounded-xl p-6">
                     <h3 className="font-semibold text-lg text-foreground mb-4 text-left">Próximos Pasos</h3>
                     <ol className="text-sm text-muted-foreground space-y-4 list-decimal list-inside text-left">
@@ -476,6 +507,13 @@ export default function InscripcionPage() {
                     <Button asChild variant="outline" className="flex-1 bg-transparent">
                       <Link href="/">Volver al Inicio</Link>
                     </Button>
+
+                    {folio && (
+                      <Button asChild className="flex-1">
+                        <Link href={`/estatus?matricula=${folio}`}>Ver Estatus</Link>
+                      </Button>
+                    )}
+
                     <Button asChild className="flex-1">
                       <Link href="/#contacto">Contactar Soporte</Link>
                     </Button>

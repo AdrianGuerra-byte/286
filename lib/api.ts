@@ -1,6 +1,6 @@
-// URL base del backend NestJS
-// Puerto 4000, ruta base /registro286
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hoyt-uncautious-jonnie.ngrok-free.dev'
+// URL base del backend (se normaliza para evitar duplicar rutas como /api o /registro286)
+const rawBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+const BASE_URL = rawBase.replace(/\/(api|registro286)\/?$/i, '')
 const API_URL = `${BASE_URL}/registro286`
 
 // Interfaz para los exámenes
@@ -182,6 +182,12 @@ export const api = {
         } else {
           throw new Error(data.message || 'Error al registrar aspirante')
         }
+      }
+
+      // Normalizar posibles nombres de matrícula devueltos por el backend
+      if (data && data.data && data.data.aspirante) {
+        const aspirante = data.data.aspirante as any
+        aspirante.folio = aspirante.folio || aspirante.pseudo_matricula || aspirante.matricula || aspirante.pseudo_matricula || aspirante.pseudoMatricula
       }
 
       return data

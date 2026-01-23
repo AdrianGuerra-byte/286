@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useSearchParams } from 'next/navigation'
 import { Navigation } from "@/components/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,6 +27,42 @@ import { api, type AspiranteEstatusCompleto } from "@/lib/api"
 
 export default function EstatusPage() {
   const [matricula, setMatricula] = useState("")
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    // Priorizar parámetro en query string
+    try {
+      const m = searchParams?.get('matricula')
+      if (m) {
+        const clean = m.toUpperCase()
+        setMatricula(clean)
+
+        // Si la matrícula viene por query string, iniciar automáticamente la consulta
+        setTimeout(() => {
+          try {
+            // Llamar a la función que consulta el estatus (si ya existe)
+            // @ts-ignore: validarEstatus está definida más abajo en la misma función componente
+            if (typeof validarEstatus === 'function') validarEstatus()
+          } catch (e) {
+            if (process.env.NODE_ENV === 'development') console.warn('No se pudo auto-consultar la matrícula desde la query:', e)
+          }
+        }, 400)
+
+        return
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // Si no hay query param, intentar usar localStorage (mejora UX tras registro)
+    try {
+      const saved = localStorage.getItem('registro:folio')
+      if (saved) setMatricula(saved)
+    } catch (e) {
+      // Ignorar errores de almacenamiento en entornos restringidos
+      if (process.env.NODE_ENV === 'development') console.warn('No se pudo leer localStorage:', e)
+    }
+  }, [searchParams])
   const [aspirante, setAspirante] = useState<AspiranteEstatusCompleto | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -54,12 +91,12 @@ export default function EstatusPage() {
       return
     }
 
-    // SEGURIDAD: Validar formato de matrícula (debe empezar con A y tener números)
-    const matriculaPattern = /^A\d{11}$/
+    // SEGURIDAD: Validar formato de matrícula (debe empezar con A y tener entre 11 y 13 dígitos)
+    const matriculaPattern = /^A\d{11,13}$/
     const matriculaLimpia = matricula.trim().toUpperCase()
 
     if (!matriculaPattern.test(matriculaLimpia)) {
-      setError("Formato de folio inválido. Debe ser: A + 11 dígitos (ej: A28691261000)")
+      setError("Formato de folio inválido. Debe empezar con 'A' seguido de 11 a 13 dígitos (ej: A28691261000)")
       return
     }
 

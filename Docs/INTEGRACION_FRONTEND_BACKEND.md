@@ -28,7 +28,9 @@ Actualiza estos valores:
 
 ```env
 # API Backend URL (si tu backend está en otro puerto, cámbialo aquí)
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_API_URL=http://localhost:4000
+# Nota: el Front corre en 3001 y el Back en 4000 en este entorno de desarrollo
+# Nota: la URL se normalizará automáticamente si incluyes "/api" o "/registro286"; evita duplicaciones por seguridad.
 
 # Google Forms URL
 # Obtén esta URL de tu formulario de Google Forms
