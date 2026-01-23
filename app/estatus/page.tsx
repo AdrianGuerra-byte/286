@@ -165,15 +165,21 @@ export default function EstatusPage() {
     }
   }
 
-  const formatearFecha = (fecha: string) => {
+  const formatearFecha = (fecha: string | Date | undefined) => {
+    if (!fecha) return "Pendiente"; // Manejo de undefined/null
+
     try {
-      return new Date(fecha).toLocaleDateString("es-MX", {
+      const dateObj = new Date(fecha);
+      // Validar si la fecha es válida matemáticamente
+      if (isNaN(dateObj.getTime())) return "Fecha inválida";
+
+      return dateObj.toLocaleDateString("es-MX", {
         day: "numeric",
         month: "long",
         year: "numeric",
       })
     } catch {
-      return fecha
+      return "Fecha no disponible"
     }
   }
 

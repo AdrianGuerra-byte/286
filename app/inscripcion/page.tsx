@@ -9,11 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, ArrowRight, Check, Upload, CreditCard, CheckCircle2, AlertCircle, ExternalLink, FileCheck } from "lucide-react"
+import { ArrowLeft, ArrowRight, Upload, CheckCircle2, AlertCircle, ExternalLink, FileCheck } from "lucide-react"
 import { api, generarUrlGoogleForms, type Examen } from "@/lib/api"
 
 export default function InscripcionPage() {
   const [step, setStep] = useState(1)
+
+  // 1. ESTADO: Incluimos los booleanos de consentimiento
   const [formData, setFormData] = useState({
     nombre: "",
     apellido_paterno: "",
@@ -21,19 +23,20 @@ export default function InscripcionPage() {
     email: "",
     telefono: "",
     examen: "",
-    aceptaTerminos: false,
     curp: "",
+    aceptaTerminos: false,   // Obligatorio
+    aceptaPrivacidad: false, // Obligatorio
+    aceptaPublicidad: false, // Opcional
   })
+
   const [folio, setFolio] = useState("")
   const [numeroReferencia, setNumeroReferencia] = useState("")
   const [examenes, setExamenes] = useState<Examen[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [googleFormsUrl, setGoogleFormsUrl] = useState("")
-  // Prevenir múltiples envíos: almacena timestamp del último envío
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0)
 
-  // Cargar exámenes al montar el componente
   useEffect(() => {
     const cargarExamenes = async () => {
       try {
@@ -50,99 +53,70 @@ export default function InscripcionPage() {
   }, [])
 
   const handleNext = async () => {
-    if (step === 1 && formData.nombre && formData.apellido_paterno && formData.email && formData.examen) {
-      // SEGURIDAD: Prevenir múltiples envíos en menos de 3 segundos (debounce)
+    if (step === 1) {
+      // Validaciones básicas de campos vacíos
+      if (!formData.nombre || !formData.apellido_paterno || !formData.email || !formData.examen) {
+         setError('Por favor completa todos los campos obligatorios (*)')
+         return
+      }
+
+      // 2. VALIDACIÓN DE CHECKBOXES OBLIGATORIOS
+      if (!formData.aceptaTerminos) {
+        setError('Debes aceptar los Términos y Condiciones para continuar')
+        return
+      }
+      if (!formData.aceptaPrivacidad) {
+        setError('Debes aceptar el Aviso de Privacidad para continuar')
+        return
+      }
+
+      // Validaciones de seguridad (Debounce y Regex)
       const now = Date.now()
       if (now - lastSubmitTime < 3000) {
         setError('Por favor espera unos segundos antes de enviar nuevamente')
         return
       }
 
-      // SEGURIDAD: Validar formato de email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(formData.email)) {
         setError('Por favor ingresa un correo electrónico válido')
         return
       }
 
-      // SEGURIDAD: Validar que nombres solo contengan letras, espacios, acentos y guiones
       const nombreRegex = /^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ\s-]+$/
-      if (!nombreRegex.test(formData.nombre)) {
-        setError('El nombre solo puede contener letras, espacios y guiones')
-        return
-      }
-      if (!nombreRegex.test(formData.apellido_paterno)) {
-        setError('El apellido paterno solo puede contener letras, espacios y guiones')
-        return
-      }
-      if (formData.apellido_materno && !nombreRegex.test(formData.apellido_materno)) {
-        setError('El apellido materno solo puede contener letras, espacios y guiones')
+      if (!nombreRegex.test(formData.nombre) || !nombreRegex.test(formData.apellido_paterno)) {
+        setError('Los nombres solo pueden contener letras, espacios y guiones')
         return
       }
 
-      // SEGURIDAD: Validar longitud de campos para prevenir ataques
-      if (formData.nombre.length > 100 || formData.apellido_paterno.length > 100) {
-        setError('Los nombres no pueden exceder 100 caracteres')
-        return
-      }
-
-      // SEGURIDAD: Validar teléfono (entre 10 y 15 dígitos)
-      const telefonoLimpio = formData.telefono.replace(/[^0-9]/g, '') // Solo contar dígitos
-      if (!formData.telefono || telefonoLimpio.length < 10 || telefonoLimpio.length > 15) {
+      // Validación Teléfono
+      const telefonoLimpio = formData.telefono.replace(/[^0-9]/g, '')
+      if (telefonoLimpio.length < 10 || telefonoLimpio.length > 15) {
         setError('El teléfono debe tener entre 10 y 15 dígitos')
         return
       }
 
-      // SEGURIDAD: Validar CURP sólo si fue proporcionada (es opcional)
+      // Validación CURP
       const curpClean = formData.curp.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
       if (formData.curp && formData.curp.trim().length > 0) {
-        if (curpClean.length !== 18) {
-          setError('La CURP debe contener 18 caracteres alfanuméricos')
-          return
-        }
-        const curpRegex = /^[A-Z0-9]{18}$/
-        if (!curpRegex.test(curpClean)) {
-          setError('La CURP sólo puede contener letras y números (18 caracteres)')
-          return
-        }
+         if (curpClean.length !== 18) {
+           setError('La CURP debe contener 18 caracteres alfanuméricos')
+           return
+         }
       }
 
-      // SEGURIDAD: Sanitizar inputs según tipo de dato
-      // Para CURP: mantener mayúsculas y remover caracteres inválidos
-      const sanitizeCurp = (input: string) => {
-        return input.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
-      }
-
-      // Para nombres: remover caracteres peligrosos y números
-      const sanitizeName = (input: string) => {
-        return input
-          .trim()
-          .replace(/[<>"'`]/g, '') // Remover caracteres HTML/JS peligrosos
-          .replace(/[0-9]/g, '') // Remover números (no válidos en nombres)
-          .replace(/\s+/g, ' ') // Normalizar espacios múltiples
-      }
-
-      // Para teléfono: solo permitir números, +, -, espacios y paréntesis
-      const sanitizePhone = (input: string) => {
-        return input
-          .trim()
-          .replace(/[^0-9+\-\s()]/g, '') // Solo caracteres válidos para teléfono
-      }
-
-      // Para email: remover caracteres peligrosos pero mantener formato válido
-      const sanitizeEmail = (input: string) => {
-        return input
-          .trim()
-          .toLowerCase()
-          .replace(/[<>"'`\s]/g, '') // Remover caracteres peligrosos y espacios
-      }
+      // Sanitización
+      const sanitizeCurp = (input: string) => input.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+      const sanitizeName = (input: string) => input.trim().replace(/[<>"'`]/g, '').replace(/[0-9]/g, '').replace(/\s+/g, ' ')
+      const sanitizePhone = (input: string) => input.trim().replace(/[^0-9+\-\s()]/g, '')
+      const sanitizeEmail = (input: string) => input.trim().toLowerCase().replace(/[<>"'`\s]/g, '')
 
       setLoading(true)
       setError(null)
       setLastSubmitTime(now)
 
       try {
-        // Preparar datos para enviar a la API (con sanitización específica por tipo)
+        // 3. PREPARACIÓN DEL PAYLOAD CON CONSENTIMIENTOS
         const datosAspirante = {
           nombre: sanitizeName(formData.nombre),
           apellido_paterno: sanitizeName(formData.apellido_paterno),
@@ -151,42 +125,35 @@ export default function InscripcionPage() {
           numero_telefonico: sanitizePhone(formData.telefono),
           curp: sanitizeCurp(formData.curp),
           examen_id: parseInt(formData.examen),
-          metadata: {
-            documentos: {
-              ActaNacimiento: "Pendiente" as const,
-              INE: "Pendiente" as const,
-              CertificadoEstudios: "Pendiente" as const,
-              ComprobanteDomicilio: "Pendiente" as const,
-            }
-          }
+          // Checkboxes mapeados al DTO
+          acepto_terminos: formData.aceptaTerminos,     // true
+          acepto_privacidad: formData.aceptaPrivacidad, // true
+          acepto_publicidad: formData.aceptaPublicidad, // true/false
+
+          // --- CORRECCIÓN CRÍTICA: ---
+          // Eliminamos el envío explícito de 'metadata'.
+          // Dejamos que el Backend use su valor por defecto (crearMetadataInicial)
+          // para generar la estructura correcta { estatus: "No subido", comentario: "" }
         }
 
-        // Llamar a la API
         const response = await api.registrarAspirante(datosAspirante)
 
-        console.log('Respuesta de la API:', response);
-
         if (response.success && response.data) {
-          // Guardar el folio generado por la API (soporta varios nombres devueltos por el servidor)
           const aspir = response.data.aspirante as any
-          const matricula = aspir.folio || aspir.pseudo_matricula || aspir.matricula || aspir.pseudoMatricula || ''
+          const matricula = aspir.folio || aspir.matricula || ''
           setFolio(matricula)
 
-          // Guardar el número de referencia si viene en la respuesta
           if (aspir.numero_referencia) {
             setNumeroReferencia(aspir.numero_referencia)
           }
 
-          // Guardar folio y correo localmente por usabilidad (para futuras consultas)
           try {
             localStorage.setItem('registro:folio', matricula)
             localStorage.setItem('registro:correo', datosAspirante.correo_electronico)
           } catch (e) {
-            // Ignorar errores de storage en entornos restringidos
-            if (process.env.NODE_ENV === 'development') console.warn('No se pudo guardar en localStorage:', e)
+            if (process.env.NODE_ENV === 'development') console.warn(e)
           }
 
-          // Generar URL de Google Forms con datos pre-llenados
           const urlForms = generarUrlGoogleForms({
             nombre: formData.nombre,
             apellido_paterno: formData.apellido_paterno,
@@ -196,23 +163,18 @@ export default function InscripcionPage() {
             matricula: matricula,
           })
           setGoogleFormsUrl(urlForms)
-
-          // Avanzar al paso de confirmación
           setStep(2)
         }
       } catch (err: any) {
-        // SEGURIDAD: No exponer detalles del error en consola en producción
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error al registrar:', err)
-        }
+        if (process.env.NODE_ENV === 'development') console.error('Error al registrar:', err)
 
-        // Mensajes genéricos para no exponer información del sistema
         const mensajeGenerico = 'No pudimos procesar tu inscripción. Por favor, intenta nuevamente.'
-
-        if (err.message.includes('correo')) {
+        if (err.message?.includes('correo')) {
           setError('El correo electrónico ya está registrado')
-        } else if (err.message.includes('examen')) {
+        } else if (err.message?.includes('examen')) {
           setError('El examen seleccionado no está disponible')
+        } else if (err.message?.includes('CURP')) {
+          setError('La CURP ingresada ya se encuentra registrada')
         } else {
           setError(mensajeGenerico)
         }
@@ -223,11 +185,6 @@ export default function InscripcionPage() {
   }
 
   const progress = (step / 2) * 100
-
-  // Efecto para depurar el valor de folio
-  useEffect(() => {
-    console.log('Valor de folio actualizado:', folio);
-  }, [folio]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -250,13 +207,12 @@ export default function InscripcionPage() {
                 <p className="text-lg text-muted-foreground">Paso {step} de 2</p>
               </div>
 
-              {/* Progress Bar */}
               <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                 <div className="bg-primary h-full transition-all duration-300" style={{ width: `${progress}%` }} />
               </div>
             </div>
 
-            {/* Botón prominente para validar estatus */}
+            {/* Tarjeta de Estatus (Visible siempre) */}
             <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -271,11 +227,7 @@ export default function InscripcionPage() {
                       Consulta el estatus de tus documentos, pago y fecha de examen
                     </p>
                   </div>
-                  <Button
-                    asChild
-                    size="lg"
-                    className="gap-2 whitespace-nowrap"
-                  >
+                  <Button asChild size="lg" className="gap-2 whitespace-nowrap">
                     <Link href="/estatus">
                       <FileCheck className="w-4 h-4" />
                       Validar mi Estatus
@@ -285,7 +237,7 @@ export default function InscripcionPage() {
               </CardContent>
             </Card>
 
-            {/* Step 1: Registro */}
+            {/* Step 1: Formulario de Registro */}
             {step === 1 && (
               <Card>
                 <CardHeader>
@@ -297,6 +249,7 @@ export default function InscripcionPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Inputs Nombre y Apellidos */}
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre(s) *</Label>
                     <Input
@@ -339,10 +292,9 @@ export default function InscripcionPage() {
                     />
                   </div>
 
-                  {/* CAMBIO REALIZADO: Grid de 3 columnas para Teléfono (1/3) y CURP (2/3) */}
                   <div className="grid sm:grid-cols-3 gap-6">
                     <div className="space-y-2 sm:col-span-1">
-                      <Label htmlFor="telefono">Teléfono * (10 dígitos)</Label>
+                      <Label htmlFor="telefono">Teléfono *</Label>
                       <Input
                         id="telefono"
                         type="tel"
@@ -350,7 +302,6 @@ export default function InscripcionPage() {
                         maxLength={10}
                         value={formData.telefono}
                         onChange={(e) => {
-                          // Solo permitir números
                           const soloNumeros = e.target.value.replace(/[^0-9]/g, '')
                           setFormData({ ...formData, telefono: soloNumeros })
                         }}
@@ -365,7 +316,6 @@ export default function InscripcionPage() {
                         maxLength={18}
                         onChange={(e) => setFormData({ ...formData, curp: e.target.value.toUpperCase().replace(/[^A-Z0-9]/gi, '') })}
                       />
-                      <p className="text-xs text-muted-foreground">Ingresa los 18 caracteres alfanuméricos.</p>
                     </div>
                   </div>
 
@@ -388,16 +338,79 @@ export default function InscripcionPage() {
                     </Select>
                   </div>
 
+                  {/* 4. SECCIÓN DE CHECKBOXES */}
+                  <div className="space-y-4 pt-4 border-t">
+
+                    {/* Aviso de Privacidad */}
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="privacidad"
+                        checked={formData.aceptaPrivacidad}
+                        onCheckedChange={(checked) => setFormData({...formData, aceptaPrivacidad: checked as boolean})}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <Label
+                          htmlFor="privacidad"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          He leído y acepto el <Link href="/privacidad" target="_blank" className="text-primary hover:underline font-semibold">Aviso de Privacidad</Link> *
+                        </Label>
+                      </div>
+                    </div>
+
+                    {/* Términos y Condiciones */}
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="terminos"
+                        checked={formData.aceptaTerminos}
+                        onCheckedChange={(checked) => setFormData({...formData, aceptaTerminos: checked as boolean})}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <Label
+                          htmlFor="terminos"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          Acepto los <Link href="/terminos" target="_blank" className="text-primary hover:underline font-semibold">Términos y Condiciones</Link> del servicio *
+                        </Label>
+                      </div>
+                    </div>
+
+                    {/* Publicidad */}
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="publicidad"
+                        checked={formData.aceptaPublicidad}
+                        onCheckedChange={(checked) => setFormData({...formData, aceptaPublicidad: checked as boolean})}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <Label
+                          htmlFor="publicidad"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          Deseo recibir información sobre futuras convocatorias y noticias.
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+
                   {error && (
-                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2">
                       <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-destructive">{error}</p>
+                      <p className="text-sm text-destructive font-medium">{error}</p>
                     </div>
                   )}
 
                   <Button
                     onClick={handleNext}
-                    disabled={!formData.nombre || !formData.apellido_paterno || !formData.email || !formData.examen || loading}
+                    disabled={
+                      !formData.nombre ||
+                      !formData.apellido_paterno ||
+                      !formData.email ||
+                      !formData.examen ||
+                      !formData.aceptaTerminos ||
+                      !formData.aceptaPrivacidad ||
+                      loading
+                    }
                     className="w-full gap-2"
                     size="lg"
                   >
@@ -408,116 +421,98 @@ export default function InscripcionPage() {
               </Card>
             )}
 
-            {/* Step 2: Confirmación */}
+            {/* Step 2: Confirmación - COMPLETO */}
             {step === 2 && (
-              <Card className="border-2 border-primary/20">
-                <CardContent className="p-12 space-y-6 text-center">
-                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <Card className="border-2 border-primary/20 animate-in fade-in zoom-in-95 duration-300">
+                <CardContent className="p-8 sm:p-12 space-y-6 text-center">
+
+                  {/* Icono de Éxito */}
+                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                     <CheckCircle2 className="w-10 h-10 text-primary" />
                   </div>
 
+                  {/* Título */}
                   <div className="space-y-3">
                     <h2 className="font-serif font-bold text-3xl text-foreground">¡Registro Completado!</h2>
                     <p className="text-lg text-muted-foreground">Tu inscripción ha sido procesada exitosamente</p>
                   </div>
 
-                  <div className="bg-muted/50 rounded-xl p-6 space-y-4">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="text-sm text-muted-foreground">Tu folio es:</div>
-                        <div className="text-2xl font-bold font-mono text-primary">{folio}</div>
-                      </div>
-
-                      {numeroReferencia && (
-                        <div className="space-y-2 pt-3 border-t border-border">
-                          <div className="text-sm text-muted-foreground">Número de referencia para pago:</div>
-                          <div className="text-3xl font-bold font-mono text-primary">{numeroReferencia}</div>
-                        </div>
-                      )}
+                  {/* Tarjeta de Datos Clave (Matrícula y Referencia) */}
+                  <div className="bg-muted/50 rounded-xl p-6 space-y-4 max-w-md mx-auto border border-border">
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground uppercase tracking-wide">Tu folio de aspirante es:</div>
+                      <div className="text-2xl sm:text-3xl font-bold font-mono text-primary tracking-tight">{folio}</div>
+                      <p className="text-xs text-muted-foreground">Guarda este número para consultar tu estatus</p>
                     </div>
+
+                    {numeroReferencia && (
+                      <div className="space-y-2 pt-4 border-t border-border mt-4">
+                        <div className="text-sm text-muted-foreground uppercase tracking-wide">Referencia Bancaria:</div>
+                        <div className="text-xl sm:text-2xl font-bold font-mono text-primary break-all">{numeroReferencia}</div>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900 rounded-xl p-6">
-                    <h3 className="font-semibold text-lg text-foreground mb-4 text-left">Próximos Pasos</h3>
-                    <ol className="text-sm text-muted-foreground space-y-4 list-decimal list-inside text-left">
-                      <li className="leading-relaxed">
-                        <strong className="text-foreground">Sube tus documentos ahora:</strong> Utiliza el formulario de Google que
-                        encontrarás más abajo para subir:
-                        <ul className="ml-6 mt-2 space-y-1 list-disc list-inside">
-                          <li>Acta de Nacimiento</li>
-                          <li>Identificación Oficial (INE)</li>
-                          <li>Certificado de Estudios</li>
-                          <li>Comprobante de Domicilio</li>
-                        </ul>
+                  {/* Lista de Próximos Pasos */}
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900 rounded-xl p-6 text-left">
+                    <h3 className="font-semibold text-lg text-foreground mb-4 flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+                      Próximos Pasos (Importante)
+                    </h3>
+                    <ol className="text-sm text-muted-foreground space-y-4 list-decimal list-inside">
+                      <li className="leading-relaxed pl-2">
+                        <strong className="text-foreground">Sube tus documentos:</strong> Utiliza el formulario de Google que encontrarás abajo para enviar tu Acta, INE y Certificado.
                       </li>
-                      <li className="leading-relaxed">
-                        <strong className="text-foreground">Validación de documentos:</strong> Nuestro equipo revisará la autenticidad de tus documentos.
-                        Este proceso puede tomar de 2 a 3 días hábiles.
+                      <li className="leading-relaxed pl-2">
+                        <strong className="text-foreground">Validación:</strong> Revisaremos tus documentos en 2-3 días hábiles.
                       </li>
-                      <li className="leading-relaxed">
-                        <strong className="text-foreground">Recibe tu ficha de pago:</strong> Una vez validados tus documentos,
-                        te enviaremos por correo tu <strong>ficha de pago</strong> con los datos bancarios e instrucciones.
+                      <li className="leading-relaxed pl-2">
+                        <strong className="text-foreground">Ficha de Pago:</strong> Si todo está correcto, recibirás tu ficha de pago por correo.
                       </li>
-                      <li className="leading-relaxed">
-                        <strong className="text-foreground">Realiza el pago:</strong> Usa tu ficha y sigue las instrucciones para realizar el pago.
-                      </li>
-                      <li className="leading-relaxed">
-                        <strong className="text-foreground">Envía tu comprobante:</strong> Envía tu comprobante de pago a{" "}
-                        <a
-                          href="mailto:Tesoreria286@cuh.mx"
-                          className="text-primary hover:underline font-semibold break-all"
-                        >
-                          Tesoreria286@cuh.mx
-                        </a>
-                      </li>
-                      <li className="leading-relaxed">
-                        <strong className="text-foreground">Recibe tu pase de entrada:</strong> Una vez confirmado tu pago,
-                        te enviaremos tu <strong>pase de entrada para el examen</strong>.
+                      <li className="leading-relaxed pl-2">
+                        <strong className="text-foreground">Pago:</strong> Realiza el pago en el banco y envía el comprobante a <a href="mailto:Tesoreria286@cuh.mx" className="text-primary font-medium hover:underline">Tesoreria286@cuh.mx</a>.
                       </li>
                     </ol>
                   </div>
 
+                  {/* Botón de Google Forms */}
                   {googleFormsUrl && (
-                    <div className="bg-primary/10 border-4 border-primary rounded-xl p-6 shadow-lg">
+                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
                       <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <Upload className="w-8 h-8 text-primary" />
-                          <h3 className="font-semibold text-2xl text-primary">
-                            Paso 2: Sube tus Documentos Ahora
-                          </h3>
+                        <div className="flex items-center justify-center gap-3">
+                          <Upload className="w-6 h-6 text-primary" />
+                          <h3 className="font-semibold text-xl text-primary">Sube tus Documentos</h3>
                         </div>
-                        <p className="text-md text-primary leading-relaxed text-left">
-                          Es importante que subas tus documentos <strong>lo antes posible</strong> para que podamos validarlos y enviarte tu ficha de pago.
+                        <p className="text-sm text-muted-foreground">
+                          Es indispensable subir tus documentos ahora para continuar con el trámite.
                         </p>
                         <Button
                           asChild
-                          className="w-full gap-2 bg-primary text-white hover:bg-primary/90 focus:ring focus:ring-primary/50"
+                          className="w-full sm:w-auto min-w-[250px] gap-2 bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform"
                           size="lg"
                         >
                           <a href={googleFormsUrl} target="_blank" rel="noopener noreferrer">
-                            Subir Documentos Ahora
-                            <ExternalLink className="w-5 h-5" />
+                            Ir al Formulario de Carga
+                            <ExternalLink className="w-4 h-4" />
                           </a>
                         </Button>
                       </div>
                     </div>
                   )}
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-6">
-                    <Button asChild variant="outline" className="flex-1 bg-transparent">
+                  {/* Botones de Navegación Final */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-6 justify-center">
+                    <Button asChild variant="outline" className="flex-1 max-w-xs">
                       <Link href="/">Volver al Inicio</Link>
                     </Button>
 
                     {folio && (
-                      <Button asChild className="flex-1">
-                        <Link href={`/estatus?matricula=${folio}`}>Ver Estatus</Link>
+                      <Button asChild className="flex-1 max-w-xs">
+                        <Link href={`/estatus?matricula=${folio}`}>Ver Estatus del Trámite</Link>
                       </Button>
                     )}
-
-                    <Button asChild className="flex-1">
-                      <Link href="/#contacto">Contactar Soporte</Link>
-                    </Button>
                   </div>
+
                 </CardContent>
               </Card>
             )}

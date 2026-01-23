@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: "Exámenes Acuerdo 286 | Centro Universitario Hidalguense",
   description:
     "Portal institucional de exámenes de evaluación para la acreditación de conocimientos - Acuerdo 286. Centro aplicador autorizado.",
-  generator: "v0.app",
+  generator: "Direccion de TI - CUH",
   icons: {
     icon: [
       {
